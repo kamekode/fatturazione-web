@@ -15,4 +15,5 @@ urlpatterns = [
     path("ddt/<int:pk>/riapri/", views.ddt_riapri, name="ddt_riapri"),
     path("ddt/<int:pk>/elimina/", views.ddt_elimina, name="ddt_elimina"),
     path("ddt/<int:pk>/stampa/", views.ddt_stampa, name="ddt_stampa"),
+    path("ddt/<int:pk>/pdf/", views.ddt_pdf, name="ddt_pdf"),
 ]

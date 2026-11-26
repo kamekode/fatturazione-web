@@ -55,7 +55,7 @@ Una fattura emessa non si può più modificare né eliminare.
   e registra la differenza. Elenco giacenze con segnalazione di articoli sotto scorta o in negativo.
 - **DDT**: numerazione progressiva per anno, separata dalle fatture; causale del trasporto con suggerimenti
   (vendita, reso merce riparata, conto riparazione...), trasporto a cura di mittente/destinatario/vettore,
-  aspetto dei beni, colli, peso, destinazione. Stampa (anche in PDF dal browser) senza prezzi, con gli spazi per le firme.
+  aspetto dei beni, colli, peso, destinazione. Stampa dal browser e "Scarica PDF" (A4), senza prezzi e con gli spazi per le firme.
   La conferma scarica dal magazzino; riportando in bozza gli scarichi vengono annullati.
 - **Fattura differita (TD24)**: si scelgono i DDT confermati di un cliente e si ottiene una fattura in bozza con tutte
   le righe e, nell'XML, un blocco `DatiDDT` per ogni DDT (numero, data, linee collegate). Avviso se si supera il

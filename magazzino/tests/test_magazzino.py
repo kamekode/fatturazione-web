@@ -167,6 +167,14 @@ class VisteTest(Base):
             self.assertEqual(self.client.get(url).status_code, 200, url)
         self.assertContains(self.client.get(reverse("ddt_stampa", args=[ddt.pk])), "Documento di trasporto n. 1/2026")
 
+    def test_pdf(self):
+        ddt = crea_ddt(self.cliente, [(self.articolo, "2.5", None), (None, "1", None)], note="Fragile <attenzione> & co.",
+                       vettore="Trasporti & C.", trasporto_a_cura="vettore", peso_kg=Decimal("12.5"))
+        risposta = self.client.get(reverse("ddt_pdf", args=[ddt.pk]))
+        self.assertEqual(risposta["Content-Type"], "application/pdf")
+        self.assertIn('attachment; filename="DDT_2026_1.pdf"', risposta["Content-Disposition"])
+        self.assertTrue(risposta.content.startswith(b"%PDF"))
+
     def test_login_richiesto(self):
         self.client.logout()
         self.assertEqual(self.client.get(reverse("ddt_elenco")).status_code, 302)

@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="{% static 'css/app.css' %}">
 </head>
 <body class="foglio">
-<div class="solo-schermo azioni"><button class="pulsante" type="button" data-stampa>Stampa</button><span class="aiuto">Oppure Ctrl+P. Puoi anche salvarlo in PDF dalla finestra di stampa.</span></div>
+<div class="solo-schermo azioni"><button class="pulsante" type="button" data-stampa>Stampa</button><a class="pulsante secondario" href="{% url 'ddt_pdf' ddt.pk %}">Scarica PDF</a></div>
 <h1>Documento di trasporto n. {{ ddt.numero_documento }} del {{ ddt.data|date:"d/m/Y" }}</h1>
 <p class="aiuto">D.P.R. 472/1996</p>
 <div class="due-colonne">

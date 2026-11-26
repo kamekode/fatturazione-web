@@ -2,7 +2,7 @@ from django.contrib import messages
 from django.db import transaction
 from django.db.models import DecimalField, Sum, Value
 from django.db.models.functions import Coalesce
-from django.http import HttpResponseNotAllowed
+from django.http import HttpResponse, HttpResponseNotAllowed
 from django.shortcuts import get_object_or_404, redirect, render
 
 from anagrafiche.models import Azienda, Cliente
@@ -105,6 +105,16 @@ def ddt_stampa(request, pk):
     ddt = get_object_or_404(DDT.objects.select_related("cliente"), pk=pk)
     contesto = {"ddt": ddt, "righe": ddt.righe.all(), "azienda": Azienda.objects.first()}
     return render(request, "magazzino/ddt_stampa.html", contesto)
+
+
+def ddt_pdf(request, pk):
+    from .pdf import ddt_pdf as genera
+
+    ddt = get_object_or_404(DDT.objects.select_related("cliente"), pk=pk)
+    risposta = HttpResponse(genera(ddt, Azienda.objects.first()), content_type="application/pdf")
+    disposizione = "inline" if request.GET.get("apri") else "attachment"
+    risposta["Content-Disposition"] = f'{disposizione}; filename="DDT_{ddt.anno}_{ddt.numero}.pdf"'
+    return risposta
 
 
 def ddt_conferma(request, pk):

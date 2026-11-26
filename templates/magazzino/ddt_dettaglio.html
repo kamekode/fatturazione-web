@@ -20,6 +20,7 @@
 {% endif %}
 <div class="azioni">
   <a class="pulsante secondario" href="{% url 'ddt_stampa' ddt.pk %}" target="_blank" rel="noopener">Stampa</a>
+  <a class="pulsante secondario" href="{% url 'ddt_pdf' ddt.pk %}">Scarica PDF</a>
 {% if ddt.modificabile %}
   <a class="pulsante secondario" href="{% url 'ddt_modifica' ddt.pk %}">Modifica</a>
   <form class="in-linea" method="post" action="{% url 'ddt_conferma' ddt.pk %}">{% csrf_token %}<button class="pulsante" type="submit">Conferma e scarica dal magazzino</button></form>
