@@ -33,9 +33,25 @@
   <form class="in-linea" method="post" action="{% url 'fattura_emetti' fattura.pk %}">{% csrf_token %}<button class="pulsante" type="submit">Genera XML ed emetti</button></form>
   <form class="in-linea" method="post" action="{% url 'fattura_elimina' fattura.pk %}" data-conferma="Eliminare definitivamente questa bozza?">{% csrf_token %}<button class="pulsante pericolo" type="submit">Elimina bozza</button></form>
 {% else %}
-  <a class="pulsante" href="{% url 'fattura_xml' fattura.pk %}">Scarica XML</a>
+  {% if fattura.stato == "emessa" %}
+  <form class="in-linea" method="post" action="{% url 'fattura_invia' fattura.pk %}" data-conferma="Inviare la fattura allo SdI tramite PEC?">{% csrf_token %}<button class="pulsante" type="submit">Invia allo SdI via PEC</button></form>
+  {% endif %}
+  {% if fattura.stato == "scartata" %}
+  <form class="in-linea" method="post" action="{% url 'fattura_riapri' fattura.pk %}" data-conferma="Riportare la fattura in bozza per correggerla?">{% csrf_token %}<button class="pulsante" type="submit">Riporta in bozza e correggi</button></form>
+  {% endif %}
+  <a class="pulsante secondario" href="{% url 'fattura_xml' fattura.pk %}">Scarica XML</a>
   <a class="pulsante secondario" href="{% url 'fattura_anteprima' fattura.pk %}" target="_blank" rel="noopener">Anteprima</a>
-  <span class="aiuto">Progressivo di invio {{ fattura.progressivo_invio }}. L'invio allo SdI arriva nel passo 2.</span>
+  <span class="aiuto">Progressivo di invio {{ fattura.progressivo_invio }}{% if fattura.inviata_il %} · inviata il {{ fattura.inviata_il|date:"d/m/Y H:i" }}{% endif %}{% if fattura.identificativo_sdi %} · ID SdI {{ fattura.identificativo_sdi }}{% endif %}</span>
 {% endif %}
 </div>
+{% if fattura.stato == "non_recapitata" %}
+<div class="carta avviso">Lo SdI non è riuscito a recapitare la fattura al cliente: è comunque emessa ed è disponibile nella sua area riservata. Ti conviene avvisare il cliente e mandargliene una copia.</div>
+{% endif %}
+{% if notifiche %}
+<div class="carta scorri"><h2>Notifiche dello SdI</h2>
+<table>
+<tr><th>Tipo</th><th>Data</th><th>File</th><th>Dettagli</th></tr>
+{% for n in notifiche %}<tr><td>{{ n.get_tipo_display }}</td><td>{{ n.data_ora|default:n.ricevuta_il|date:"d/m/Y H:i" }}</td><td>{{ n.nome_file }}</td><td>{% if n.errori %}<span class="errore">{{ n.errori|linebreaksbr }}</span>{% elif n.identificativo_sdi %}ID SdI {{ n.identificativo_sdi }}{% endif %}</td></tr>{% endfor %}
+</table></div>
+{% endif %}
 {% endblock %}

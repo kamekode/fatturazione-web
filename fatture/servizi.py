@@ -29,3 +29,17 @@ def emetti(fattura: Fattura) -> Fattura:
         fattura.stato = Fattura.Stato.EMESSA
         fattura.save(update_fields=["xml", "progressivo_invio", "stato", "modificata_il"])
     return fattura
+
+
+def riporta_in_bozza(fattura: Fattura) -> Fattura:
+    """Dopo uno scarto la fattura si considera non emessa: torna modificabile con lo stesso numero.
+
+    Al nuovo invio riceverà un nuovo progressivo, quindi un nuovo nome file.
+    """
+    if fattura.stato != Fattura.Stato.SCARTATA:
+        raise ErroreFattura("Solo una fattura scartata dallo SdI può tornare in bozza.")
+    fattura.stato = Fattura.Stato.BOZZA
+    fattura.xml = ""
+    fattura.progressivo_invio = ""
+    fattura.save(update_fields=["stato", "xml", "progressivo_invio", "modificata_il"])
+    return fattura

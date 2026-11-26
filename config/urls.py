@@ -18,5 +18,6 @@ urlpatterns = [
     path("anagrafiche/", include("anagrafiche.urls")),
     path("articoli/", include("catalogo.urls")),
     path("fatture/", include("fatture.urls")),
+    path("sdi/", include("sdi.urls")),
     path(settings.ADMIN_URL, admin.site.urls),
 ]

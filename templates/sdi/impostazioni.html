@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block titolo %}Impostazioni PEC{% endblock %}
+{% block contenuto %}
+<div class="carta"><h1>Impostazioni PEC</h1>
+<p class="aiuto">Casella PEC usata per inviare le fatture allo SdI e ricevere notifiche e fatture dei fornitori.
+I valori proposti sono quelli di Aruba (server imaps.pec.aruba.it e smtps.pec.aruba.it, SSL).
+La password viene salvata cifrata e non viene mai mostrata.</p>
+{% if config %}<p class="aiuto">Ultimo controllo della casella: {{ config.ultimo_controllo|date:"d/m/Y H:i"|default:"mai" }}</p>{% endif %}
+<form method="post">{% csrf_token %}{% include "campi.html" %}
+<div class="azioni">
+  <button class="pulsante" type="submit">Salva</button>
+  <button class="pulsante secondario" type="submit" name="prova" value="1">Salva e prova la connessione</button>
+</div></form></div>
+{% endblock %}
