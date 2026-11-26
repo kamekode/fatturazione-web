@@ -1,0 +1,37 @@
+:root{--sfondo:#f6f7f9;--carta:#fff;--testo:#1d2430;--tenue:#5b6575;--bordo:#dde1e7;--primario:#1f5fbf;--ok:#1d7a46;--errore:#b42318;--avviso:#9a6700}
+@media (prefers-color-scheme:dark){:root{--sfondo:#13161b;--carta:#1c2027;--testo:#e6e9ee;--tenue:#9aa3b2;--bordo:#2d333d;--primario:#6ea3ff;--ok:#5cc48a;--errore:#ff7b72;--avviso:#e3b341}}
+*{box-sizing:border-box}
+body{margin:0;font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--sfondo);color:var(--testo)}
+a{color:var(--primario)}
+header{background:var(--carta);border-bottom:1px solid var(--bordo)}
+header .barra{max-width:1100px;margin:0 auto;padding:10px 16px;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+header .marchio{font-weight:700;text-decoration:none;color:var(--testo)}
+header nav{display:flex;gap:14px;flex-wrap:wrap;flex:1}
+header nav a{text-decoration:none}
+main{max-width:1100px;margin:0 auto;padding:20px 16px}
+.carta{background:var(--carta);border:1px solid var(--bordo);border-radius:8px;padding:16px;margin-bottom:16px}
+.griglia{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(220px,1fr))}
+table{width:100%;border-collapse:collapse}
+th,td{text-align:left;padding:8px;border-bottom:1px solid var(--bordo);vertical-align:top}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+.scorri{overflow-x:auto}
+label{display:block;font-size:13px;color:var(--tenue);margin-bottom:2px}
+input,select,textarea{width:100%;padding:7px 8px;border:1px solid var(--bordo);border-radius:6px;background:var(--carta);color:var(--testo);font:inherit}
+input[type=checkbox]{width:auto}
+.campo{margin-bottom:10px}
+.errorlist{color:var(--errore);margin:2px 0;padding-left:16px;font-size:13px}
+.aiuto{font-size:12px;color:var(--tenue)}
+.pulsante{display:inline-block;padding:7px 14px;border-radius:6px;border:1px solid var(--primario);background:var(--primario);color:#fff;text-decoration:none;cursor:pointer;font:inherit}
+.pulsante.secondario{background:transparent;color:var(--primario)}
+.pulsante.pericolo{background:var(--errore);border-color:var(--errore)}
+.azioni{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.messaggi{list-style:none;padding:0}
+.messaggi li{padding:10px 12px;border-radius:6px;margin-bottom:8px;border:1px solid var(--bordo);background:var(--carta)}
+.messaggi .success{border-color:var(--ok)}.messaggi .error{border-color:var(--errore)}.messaggi .warning{border-color:var(--avviso)}
+.etichetta{font-size:12px;padding:2px 8px;border-radius:10px;border:1px solid var(--bordo)}
+.etichetta.emessa{border-color:var(--ok);color:var(--ok)}
+.accesso{max-width:360px;margin:60px auto}
+form.in-linea{display:inline}
+.grande{font-size:28px}
+.espandi{margin:0;flex:1}
+.totali td{border:0;padding:3px 8px}

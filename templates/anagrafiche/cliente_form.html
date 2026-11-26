@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block titolo %}{% if cliente %}{{ cliente }}{% else %}Nuovo cliente{% endif %}{% endblock %}
+{% block contenuto %}
+<div class="carta"><h1>{% if cliente %}{{ cliente }}{% else %}Nuovo cliente{% endif %}</h1>
+<form method="post">{% csrf_token %}{% include "campi.html" %}
+<div class="azioni"><button class="pulsante" type="submit">Salva</button><a href="{% url 'clienti' %}">Annulla</a></div></form></div>
+{% endblock %}

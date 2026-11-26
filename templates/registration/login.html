@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block titolo %}Accesso{% endblock %}
+{% block contenuto %}
+<div class="carta accesso">
+  <h1>Accesso</h1>
+  <form method="post">{% csrf_token %}
+    {% if form.errors %}<ul class="errorlist"><li>Nome utente o password non corretti.</li></ul>{% endif %}
+    <div class="campo"><label for="id_username">Nome utente</label>{{ form.username }}</div>
+    <div class="campo"><label for="id_password">Password</label>{{ form.password }}</div>
+    <input type="hidden" name="next" value="{{ next }}">
+    <button class="pulsante" type="submit">Entra</button>
+  </form>
+</div>
+{% endblock %}

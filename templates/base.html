@@ -1,0 +1,28 @@
+{% load static %}<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block titolo %}Fatturazione{% endblock %} · Fatturazione Web</title>
+<link rel="stylesheet" href="{% static 'css/app.css' %}">
+</head>
+<body>
+{% if user.is_authenticated %}
+<header><div class="barra">
+  <a class="marchio" href="{% url 'home' %}">Fatturazione Web</a>
+  <nav>
+    <a href="{% url 'fatture' %}">Fatture</a>
+    <a href="{% url 'clienti' %}">Clienti</a>
+    <a href="{% url 'articoli' %}">Articoli</a>
+    <a href="{% url 'azienda' %}">Dati azienda</a>
+  </nav>
+  <a href="{% url 'password_change' %}">Password</a>
+  <form class="in-linea" method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="pulsante secondario" type="submit">Esci</button></form>
+</div></header>
+{% endif %}
+<main>
+{% if messages %}<ul class="messaggi">{% for m in messages %}<li class="{{ m.tags }}">{{ m }}</li>{% endfor %}</ul>{% endif %}
+{% block contenuto %}{% endblock %}
+</main>
+</body>
+</html>
