@@ -10,7 +10,7 @@ cruscotto con previsione delle tasse.
 |---|---|---|
 | 1 | Base, accesso protetto, anagrafiche, articoli, termini di pagamento e rate, XML FatturaPA validato | ✅ |
 | 2 | Invio e ricezione SdI via PEC (poi SDICoop) | ✅ PEC |
-| 3 | Magazzino, DDT, fattura differita, migrazione dati | da fare |
+| 3 | Magazzino, DDT, fattura differita, migrazione dati | 🟡 importazione da Flextax |
 | 4 | Scadenziario e cruscotto con previsione tasse | da fare |
 
 ## Cosa fa oggi
@@ -47,6 +47,21 @@ Una fattura emessa non si può più modificare né eliminare.
   - mancata consegna (MC) → *Non recapitata*: la fattura è emessa e disponibile al cliente nella sua area riservata;
   - fatture dei fornitori (anche firmate `.p7m`) → sezione **Ricevute**, con anteprima e file originale conservato.
 - Il controllo si può pianificare: `python manage.py controlla_pec` (ad esempio con l'Utilità di pianificazione di Windows).
+
+### Importazione da Flextax
+
+Pagina **Fatture → Importa da Flextax**: si carica lo ZIP esportato da Flextax (e, se si vuole, il CSV dell'elenco documenti).
+
+- Ogni fattura viene ricostruita dal suo XML FatturaPA: cliente (creato se manca), righe, pagamento e rate.
+  Il file originale resta conservato e scaricabile. Le fatture importate sono in sola lettura, con stato *Importata*.
+- Le righe che Flextax aggiunge in automatico non diventano righe: "Imposta di bollo assolta in modo virtuale"
+  diventa la casella *bollo a carico del cliente* (2 € = addebitato), la riga NOTA dei riferimenti normativi
+  diventa il *testo a piè di fattura* dei dati azienda, se è vuoto.
+- Se i dati azienda sono vuoti vengono presi dal cedente delle fatture. Fatture di un'altra partita IVA vengono rifiutate.
+- La numerazione prosegue dopo l'ultima fattura importata e il progressivo di invio riparte dopo l'ultimo file
+  di Flextax, così nessun nome file inviato allo SdI viene riusato.
+- Dal CSV vengono importati gli incassi (fino a 6 acconti con data per fattura), che serviranno allo scadenziario.
+- Si può ripetere l'importazione: le fatture già presenti vengono saltate e gli incassi non vengono duplicati.
 
 Le fonti ufficiali usate (schemi, fogli di stile, esempi) sono elencate in [`schemi/FONTI.md`](schemi/FONTI.md).
 

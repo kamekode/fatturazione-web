@@ -99,6 +99,7 @@ def dettaglio(request, pk):
     contesto = {
         "fattura": fattura, "righe": righe, "totali": totali, "rate": rate, "errore_rate": errore_rate,
         "azienda": Azienda.objects.first(), "notifiche": fattura.notifiche.all(),
+        "incassi": fattura.incassi.all(),
     }
     return render(request, "fatture/dettaglio.html", contesto)
 
@@ -119,11 +120,12 @@ def elimina(request, pk):
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])
     fattura = get_object_or_404(Fattura, pk=pk)
-    if not fattura.modificabile:
+    importata = fattura.stato == Fattura.Stato.IMPORTATA
+    if not fattura.modificabile and not importata:
         messages.error(request, "Una fattura emessa non si può eliminare.")
         return redirect("fattura_dettaglio", pk=pk)
     fattura.delete()
-    messages.success(request, "Bozza eliminata.")
+    messages.success(request, "Fattura importata eliminata dal programma." if importata else "Bozza eliminata.")
     return redirect("fatture")
 
 

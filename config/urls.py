@@ -19,5 +19,6 @@ urlpatterns = [
     path("articoli/", include("catalogo.urls")),
     path("fatture/", include("fatture.urls")),
     path("sdi/", include("sdi.urls")),
+    path("importa/", include("migrazione.urls")),
     path(settings.ADMIN_URL, admin.site.urls),
 ]

@@ -4,6 +4,9 @@
 {% if not azienda %}
 <div class="carta"><strong>Primo passo:</strong> <a href="{% url 'azienda' %}">compila i dati della tua azienda</a> per poter emettere fatture.</div>
 {% endif %}
+{% if not num_fatture %}
+<div class="carta">Hai già delle fatture fatte con Flextax? <a href="{% url 'importa_flextax' %}">Importale da qui</a>.</div>
+{% endif %}
 <div class="griglia">
   <div class="carta"><div class="aiuto">Clienti</div><div class="grande">{{ num_clienti }}</div></div>
   <div class="carta"><div class="aiuto">Fatture</div><div class="grande">{{ num_fatture }}</div></div>
