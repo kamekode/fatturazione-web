@@ -1,3 +1,5 @@
+from datetime import date
+
 from django.contrib.auth.models import User
 from django.test import TestCase, override_settings
 from django.urls import reverse
@@ -57,7 +59,8 @@ class FlussoFatturaTest(TestCase):
     def dati_form(self, **extra):
         dati = {
             "cliente": self.cliente.pk, "tipo_documento": "TD01", "data": "2026-11-26", "causale": "",
-            "condizioni_pagamento": "TP02", "modalita_pagamento": "MP05", "data_scadenza": "2026-12-26",
+            "condizioni_pagamento": "TP02", "modalita_pagamento": "MP05", "termini_pagamento": "30", "data_scadenza": "", "numero_rate": "",
+            "rate-TOTAL_FORMS": "0", "rate-INITIAL_FORMS": "0", "rate-MIN_NUM_FORMS": "0", "rate-MAX_NUM_FORMS": "1000",
             "righe-TOTAL_FORMS": "2", "righe-INITIAL_FORMS": "0", "righe-MIN_NUM_FORMS": "1", "righe-MAX_NUM_FORMS": "1000",
             "righe-0-descrizione": "Sviluppo sito", "righe-0-quantita": "1", "righe-0-prezzo_unitario": "500",
             "righe-0-aliquota_iva": "0", "righe-0-natura": "N2.2",
@@ -82,6 +85,75 @@ class FlussoFatturaTest(TestCase):
         # Una fattura emessa non è più modificabile.
         risposta = self.client.post(reverse("fattura_modifica", args=[fattura.pk]), self.dati_form())
         self.assertRedirects(risposta, reverse("fattura_dettaglio", args=[fattura.pk]))
+
+    def test_scadenza_calcolata_dai_termini(self):
+        self.client.post(reverse("fattura_nuova"), self.dati_form(termini_pagamento="30FM"))
+        self.assertEqual(Fattura.objects.get().data_scadenza, date(2026, 12, 31))
+
+    def test_data_specifica_obbligatoria(self):
+        risposta = self.client.post(reverse("fattura_nuova"), self.dati_form(termini_pagamento="LIBERA"))
+        self.assertEqual(risposta.status_code, 200)
+        self.assertFalse(Fattura.objects.exists())
+        self.client.post(reverse("fattura_nuova"), self.dati_form(termini_pagamento="LIBERA", data_scadenza="2027-02-15"))
+        self.assertEqual(Fattura.objects.get().data_scadenza, date(2027, 2, 15))
+
+    def test_rate_generate_dal_numero(self):
+        self.client.post(reverse("fattura_nuova"), self.dati_form(condizioni_pagamento="TP01", numero_rate="3"))
+        fattura = Fattura.objects.get()
+        self.assertIsNone(fattura.data_scadenza)
+        self.assertEqual(
+            [r.data_scadenza for r in fattura.rate.all()],
+            [date(2026, 12, 26), date(2027, 1, 25), date(2027, 2, 24)],
+        )
+        self.client.post(reverse("fattura_emetti", args=[fattura.pk]))
+        fattura.refresh_from_db()
+        self.assertEqual(fattura.stato, Fattura.Stato.EMESSA)
+        self.assertEqual(fattura.xml.count("<DettaglioPagamento>"), 3)
+        self.assertEqual(fattura.xml.count("<ImportoPagamento>166.67</ImportoPagamento>"), 2)
+        self.assertIn("<ImportoPagamento>166.66</ImportoPagamento>", fattura.xml)
+
+    def test_rate_inserite_a_mano(self):
+        dati = self.dati_form(
+            condizioni_pagamento="TP01", numero_rate="",
+            **{
+                "rate-TOTAL_FORMS": "2",
+                "rate-0-data_scadenza": "2027-01-10", "rate-0-importo": "100",
+                "rate-1-data_scadenza": "2027-03-10", "rate-1-importo": "",
+            },
+        )
+        self.client.post(reverse("fattura_nuova"), dati)
+        fattura = Fattura.objects.get()
+        self.assertEqual(fattura.numero_rate, 2)
+        risposta = self.client.get(reverse("fattura_dettaglio", args=[fattura.pk]))
+        self.assertContains(risposta, "400,00 €")
+
+    def test_una_sola_rata_non_basta(self):
+        dati = self.dati_form(
+            condizioni_pagamento="TP01", **{"rate-TOTAL_FORMS": "1", "rate-0-data_scadenza": "2027-01-10"}
+        )
+        risposta = self.client.post(reverse("fattura_nuova"), dati)
+        self.assertContains(risposta, "Servono almeno 2 rate.")
+        self.assertFalse(Fattura.objects.exists())
+
+    def test_rate_eliminate_se_si_torna_al_pagamento_completo(self):
+        self.client.post(reverse("fattura_nuova"), self.dati_form(condizioni_pagamento="TP01", numero_rate="2"))
+        fattura = Fattura.objects.get()
+        dati = self.dati_form(**{"rate-TOTAL_FORMS": "0", "righe-TOTAL_FORMS": "0", "righe-MIN_NUM_FORMS": "0"})
+        riga = fattura.righe.get()
+        dati.update({
+            "righe-TOTAL_FORMS": "1", "righe-INITIAL_FORMS": "1", "righe-0-id": str(riga.pk), "righe-0-fattura": str(fattura.pk),
+        })
+        self.client.post(reverse("fattura_modifica", args=[fattura.pk]), dati)
+        self.assertEqual(fattura.rate.count(), 0)
+
+    def test_righe_aggiuntive(self):
+        dati = self.dati_form(**{
+            "righe-TOTAL_FORMS": "6",
+            "righe-5-descrizione": "Riga aggiunta", "righe-5-quantita": "1", "righe-5-prezzo_unitario": "10",
+            "righe-5-aliquota_iva": "0", "righe-5-natura": "N2.2",
+        })
+        self.client.post(reverse("fattura_nuova"), dati)
+        self.assertEqual(Fattura.objects.get().righe.count(), 2)
 
     def test_riga_senza_natura_con_aliquota_zero(self):
         risposta = self.client.post(reverse("fattura_nuova"), self.dati_form(**{"righe-0-natura": ""}))

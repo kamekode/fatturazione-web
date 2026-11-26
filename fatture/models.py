@@ -8,7 +8,7 @@ from django.utils import timezone
 
 from anagrafiche.models import Cliente
 
-from .codici import CondizioniPagamento, ModalitaPagamento, Natura, TipoDocumento
+from .codici import CondizioniPagamento, ModalitaPagamento, Natura, TerminiPagamento, TipoDocumento
 
 
 class Fattura(models.Model):
@@ -24,7 +24,12 @@ class Fattura(models.Model):
     causale = models.TextField(blank=True)
     condizioni_pagamento = models.CharField(max_length=4, choices=CondizioniPagamento.choices, default=CondizioniPagamento.COMPLETO)
     modalita_pagamento = models.CharField(max_length=4, choices=ModalitaPagamento.choices, default=ModalitaPagamento.BONIFICO)
-    data_scadenza = models.DateField("scadenza pagamento", null=True, blank=True)
+    termini_pagamento = models.CharField(max_length=6, choices=TerminiPagamento.choices, default=TerminiPagamento.GG30)
+    data_scadenza = models.DateField(
+        "scadenza pagamento", null=True, blank=True,
+        help_text="Calcolata in automatico dai termini, salvo con \"Data specifica\".",
+    )
+    numero_rate = models.PositiveSmallIntegerField(null=True, blank=True, help_text="Solo per il pagamento a rate.")
     stato = models.CharField(max_length=10, choices=Stato.choices, default=Stato.BOZZA, editable=False)
     progressivo_invio = models.CharField(max_length=5, blank=True, editable=False)
     xml = models.TextField(blank=True, editable=False)
@@ -89,6 +94,25 @@ class RigaFattura(models.Model):
             raise ValidationError({"natura": "Con aliquota 0 va indicata la natura dell'operazione."})
         if self.aliquota_iva and self.aliquota_iva > 0 and self.natura:
             raise ValidationError({"natura": "La natura va indicata solo per le righe senza IVA."})
+
+
+class Rata(models.Model):
+    """Scadenza di una rata (condizioni di pagamento TP01)."""
+
+    fattura = models.ForeignKey(Fattura, on_delete=models.CASCADE, related_name="rate")
+    data_scadenza = models.DateField("scadenza")
+    importo = models.DecimalField(
+        max_digits=15, decimal_places=2, null=True, blank=True,
+        validators=[MinValueValidator(Decimal("0.01"))],
+        help_text="Vuoto = il resto viene diviso in parti uguali tra le rate senza importo.",
+    )
+
+    class Meta:
+        ordering = ["data_scadenza", "id"]
+        verbose_name_plural = "rate"
+
+    def __str__(self):
+        return f"Rata del {self.data_scadenza:%d/%m/%Y}"
 
 
 class Contatore(models.Model):

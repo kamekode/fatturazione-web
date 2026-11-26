@@ -5,7 +5,7 @@ from django.conf import settings
 from django.test import TestCase
 from lxml import etree
 
-from fatture.calcoli import calcola_totali
+from fatture.calcoli import ErroreRate, calcola_scadenza, calcola_totali, ripartisci_rate, scadenze_rate
 from fatture.models import Fattura
 from fatture.servizi import emetti
 from fatture.xml import (
@@ -101,6 +101,12 @@ class GenerazioneXmlTest(TestCase):
         self.assertValido(xml)
         self.assertEqual([len(c) for c in testo(xml, "Causale")], [200, 200, 50])
 
+    def test_testo_piede_in_causale(self):
+        self.azienda.testo_piede = "Documento non soggetto a ritenuta."
+        xml = genera_xml(crea_fattura(self.cliente, causale="Consulenza"), self.azienda, "00001")
+        self.assertValido(xml)
+        self.assertEqual(testo(xml, "Causale"), ["Consulenza", "Documento non soggetto a ritenuta."])
+
     def test_fattura_senza_righe(self):
         fattura = Fattura.objects.create(cliente=self.cliente)
         with self.assertRaises(ErroreFattura):
@@ -144,3 +150,29 @@ class EmissioneTest(TestCase):
     def test_totali_arrotondati(self):
         fattura = crea_fattura(self.cliente, righe=[(Decimal("3"), Decimal("0.335"))])
         self.assertEqual(calcola_totali(fattura.righe.all()).totale_documento, Decimal("1.01"))
+
+
+class ScadenzeTest(TestCase):
+    def test_termini(self):
+        d = date(2026, 11, 26)
+        self.assertEqual(calcola_scadenza(d, "DF"), d)
+        self.assertEqual(calcola_scadenza(d, "30"), date(2026, 12, 26))
+        self.assertEqual(calcola_scadenza(d, "60"), date(2027, 1, 25))
+        self.assertEqual(calcola_scadenza(d, "90"), date(2027, 2, 24))
+        self.assertEqual(calcola_scadenza(d, "FM"), date(2026, 11, 30))
+        self.assertEqual(calcola_scadenza(d, "30FM"), date(2026, 12, 31))
+        self.assertEqual(calcola_scadenza(date(2026, 12, 31), "60FM"), date(2027, 3, 31))
+        self.assertIsNone(calcola_scadenza(d, "LIBERA"))
+
+    def test_scadenze_rate(self):
+        d = date(2026, 11, 26)
+        self.assertEqual(scadenze_rate(d, "30FM", 2), [date(2026, 12, 31), date(2027, 1, 31)])
+        self.assertEqual(scadenze_rate(d, "DF", 2), [date(2026, 12, 26), date(2027, 1, 25)])
+
+    def test_ripartizione(self):
+        self.assertEqual(ripartisci_rate(Decimal("100"), [None, None, None]), [Decimal("33.33"), Decimal("33.33"), Decimal("33.34")])
+        self.assertEqual(ripartisci_rate(Decimal("100"), [Decimal("70"), None]), [Decimal("70"), Decimal("30")])
+        with self.assertRaises(ErroreRate):
+            ripartisci_rate(Decimal("100"), [Decimal("60"), Decimal("30")])
+        with self.assertRaises(ErroreRate):
+            ripartisci_rate(Decimal("100"), [Decimal("120"), None])

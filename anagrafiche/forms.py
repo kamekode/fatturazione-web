@@ -9,8 +9,9 @@ class AziendaForm(forms.ModelForm):
         fields = [
             "denominazione", "nome", "cognome", "partita_iva", "codice_fiscale", "regime_fiscale",
             "indirizzo", "numero_civico", "cap", "comune", "provincia", "nazione",
-            "telefono", "email", "pec", "iban", "istituto_finanziario", "riferimento_normativo",
+            "telefono", "email", "pec", "iban", "istituto_finanziario", "riferimento_normativo", "testo_piede",
         ]
+        widgets = {"testo_piede": forms.Textarea(attrs={"rows": 4})}
 
 
 class ClienteForm(forms.ModelForm):

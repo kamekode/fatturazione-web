@@ -1,23 +1,44 @@
 {% extends "base.html" %}
+{% load static %}
 {% block titolo %}{% if fattura %}Fattura {{ fattura.numero_documento }}{% else %}Nuova fattura{% endif %}{% endblock %}
 {% block contenuto %}
-<form method="post">{% csrf_token %}
+<form method="post" id="modulo-fattura">{% csrf_token %}
 <div class="carta"><h1>{% if fattura %}Fattura {{ fattura.numero_documento }}{% else %}Nuova fattura{% endif %}</h1>
 {% include "campi.html" %}
+<p class="aiuto" id="anteprima-scadenza" aria-live="polite"></p>
 <p class="aiuto">Il numero viene assegnato in automatico, progressivo per anno.</p></div>
+
 <div class="carta"><h2>Righe</h2>
 <p class="aiuto">Se scegli un articolo, descrizione, prezzo e unità di misura vuoti vengono presi dall'articolo.</p>
 {{ formset.management_form }}
 {% if formset.non_form_errors %}<ul class="errorlist">{% for e in formset.non_form_errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
 <div class="scorri"><table>
-<tr><th>Articolo</th><th>Descrizione</th><th>Q.tà</th><th>U.m.</th><th>Prezzo</th><th>IVA %</th><th>Natura</th><th>Elimina</th></tr>
-{% for f in formset %}
-<tr>{% for hidden in f.hidden_fields %}{{ hidden }}{% endfor %}
-<td>{{ f.articolo }}{{ f.articolo.errors }}</td><td>{{ f.descrizione }}{{ f.descrizione.errors }}{{ f.non_field_errors }}</td><td>{{ f.quantita }}{{ f.quantita.errors }}</td><td>{{ f.unita_misura }}</td><td>{{ f.prezzo_unitario }}{{ f.prezzo_unitario.errors }}</td><td>{{ f.aliquota_iva }}</td><td>{{ f.natura }}{{ f.natura.errors }}</td><td>{% if f.instance.pk %}{{ f.DELETE }}{% endif %}</td></tr>
-{% endfor %}
+<thead><tr><th>Articolo</th><th>Descrizione</th><th>Q.tà</th><th>U.m.</th><th>Prezzo</th><th>IVA %</th><th>Natura</th><th>Elimina</th></tr></thead>
+<tbody id="righe-corpo">
+{% for f in formset %}{% include "fatture/riga.html" %}{% endfor %}
+</tbody>
 </table></div>
-<p class="aiuto">Servono più righe? Salva la bozza e riaprila: compariranno altre righe vuote.</p>
+<template id="riga-vuota">{% with f=formset.empty_form %}{% include "fatture/riga.html" %}{% endwith %}</template>
+<button type="button" class="pulsante secondario" id="aggiungi-riga">+ Aggiungi riga</button>
 </div>
+
+<div class="carta" id="blocco-rate">
+<h2>Rate</h2>
+<p class="aiuto">Indica il numero di rate qui sopra e premi "Calcola scadenze": le date seguono i termini di pagamento
+(ad esempio 30 gg con 3 rate dà 30, 60 e 90 giorni) e puoi modificarle. Lascia vuoto l'importo per dividere il totale in parti uguali.</p>
+{{ rate_formset.management_form }}
+{% if rate_formset.non_form_errors %}<ul class="errorlist">{% for e in rate_formset.non_form_errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+<div class="scorri"><table>
+<thead><tr><th>Rata</th><th>Scadenza</th><th>Importo (€)</th><th>Elimina</th></tr></thead>
+<tbody id="rate-corpo">
+{% for f in rate_formset %}{% include "fatture/rata.html" %}{% endfor %}
+</tbody>
+</table></div>
+<template id="rata-vuota">{% with f=rate_formset.empty_form %}{% include "fatture/rata.html" %}{% endwith %}</template>
+<button type="button" class="pulsante secondario" id="calcola-rate">Calcola scadenze</button>
+</div>
+
 <div class="azioni"><button class="pulsante" type="submit">Salva bozza</button><a href="{% if fattura %}{% url 'fattura_dettaglio' fattura.pk %}{% else %}{% url 'fatture' %}{% endif %}">Annulla</a></div>
 </form>
+<script src="{% static 'js/fattura.js' %}"></script>
 {% endblock %}

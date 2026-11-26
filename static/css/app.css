@@ -35,3 +35,6 @@ form.in-linea{display:inline}
 .grande{font-size:28px}
 .espandi{margin:0;flex:1}
 .totali td{border:0;padding:3px 8px}
+[hidden]{display:none !important}
+#aggiungi-riga,#calcola-rate{margin-top:10px}
+.testo-piede{white-space:normal}

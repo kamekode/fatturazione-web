@@ -2,18 +2,43 @@ from django import forms
 
 from anagrafiche.models import Azienda
 
-from .models import Fattura, RigaFattura
+from .calcoli import calcola_scadenza
+from .codici import CondizioniPagamento, TerminiPagamento
+from .models import Fattura, Rata, RigaFattura
 
 
 class FatturaForm(forms.ModelForm):
     class Meta:
         model = Fattura
-        fields = ["cliente", "tipo_documento", "data", "causale", "condizioni_pagamento", "modalita_pagamento", "data_scadenza"]
+        fields = [
+            "cliente", "tipo_documento", "data", "causale", "modalita_pagamento", "condizioni_pagamento",
+            "termini_pagamento", "data_scadenza", "numero_rate",
+        ]
         widgets = {
             "data": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
             "data_scadenza": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
             "causale": forms.Textarea(attrs={"rows": 2}),
+            "numero_rate": forms.NumberInput(attrs={"min": 2, "max": 36}),
         }
+
+    def clean(self):
+        dati = super().clean()
+        data = dati.get("data")
+        termini = dati.get("termini_pagamento")
+        a_rate = dati.get("condizioni_pagamento") == CondizioniPagamento.RATE
+        if a_rate:
+            # Con le rate le scadenze stanno sulle singole rate.
+            dati["data_scadenza"] = None
+        elif termini == TerminiPagamento.LIBERA:
+            if not dati.get("data_scadenza"):
+                self.add_error("data_scadenza", "Indica la data di scadenza.")
+        elif data and termini:
+            dati["data_scadenza"] = calcola_scadenza(data, termini)
+        if not a_rate:
+            dati["numero_rate"] = None
+        elif dati.get("numero_rate") is not None and not 2 <= dati["numero_rate"] <= 36:
+            self.add_error("numero_rate", "Da 2 a 36 rate.")
+        return dati
 
 
 class RigaForm(forms.ModelForm):
@@ -61,5 +86,22 @@ class RigaForm(forms.ModelForm):
 
 
 RigheFormSet = forms.inlineformset_factory(
-    Fattura, RigaFattura, form=RigaForm, extra=3, can_delete=True, min_num=1, validate_min=True
+    Fattura, RigaFattura, form=RigaForm, extra=0, can_delete=True, min_num=1, validate_min=True
 )
+
+
+class RataForm(forms.ModelForm):
+    class Meta:
+        model = Rata
+        fields = ["data_scadenza", "importo"]
+        widgets = {"data_scadenza": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d")}
+
+    def has_changed(self):
+        if not self.instance.pk and not any(
+            self.data.get(self.add_prefix(c), "").strip() for c in ("data_scadenza", "importo")
+        ):
+            return False
+        return super().has_changed()
+
+
+RateFormSet = forms.inlineformset_factory(Fattura, Rata, form=RataForm, extra=0, can_delete=True)

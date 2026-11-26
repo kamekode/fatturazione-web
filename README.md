@@ -8,7 +8,7 @@ cruscotto con previsione delle tasse.
 
 | Passo | Contenuto | Stato |
 |---|---|---|
-| 1 | Base, accesso protetto, anagrafiche, articoli, XML FatturaPA validato | ✅ in questa versione |
+| 1 | Base, accesso protetto, anagrafiche, articoli, termini di pagamento e rate, XML FatturaPA validato | ✅ in questa versione |
 | 2 | Invio e ricezione SdI via PEC (poi SDICoop) | da fare |
 | 3 | Magazzino, DDT, fattura differita, migrazione dati | da fare |
 | 4 | Scadenziario e cruscotto con previsione tasse | da fare |
@@ -23,6 +23,9 @@ cruscotto con previsione delle tasse.
 - **Articoli e servizi** con prezzo, aliquota e natura predefiniti.
 - **Fatture** con numerazione progressiva annuale, righe da articolo o libere, calcolo di totali,
   riepilogo IVA e bollo virtuale (2 € oltre 77,47 € di operazioni senza IVA).
+- **Pagamento**: termini 30/60/90 gg data fattura o fine mese con scadenza calcolata, data specifica,
+  oppure pagamento a rate con scadenze generate e modificabili (una riga DettaglioPagamento per rata).
+- **Testo a piè di fattura** personalizzabile in Dati azienda, riportato nella Causale dell'XML.
 - **XML FatturaPA (FPR12)** generato e validato sugli schemi ufficiali 1.2.3 e 1.2.4 prima dell'emissione,
   con nome file e progressivo di invio conformi. Anteprima con il foglio di stile ufficiale.
 

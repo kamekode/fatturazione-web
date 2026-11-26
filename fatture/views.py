@@ -5,8 +5,10 @@ from django.shortcuts import get_object_or_404, redirect, render
 
 from anagrafiche.models import Azienda
 
-from .calcoli import calcola_totali
-from .forms import FatturaForm, RigheFormSet
+from .calcoli import ErroreRate, calcola_totali, ripartisci_rate, scadenze_rate
+from .codici import CondizioniPagamento
+from .forms import FatturaForm, RateFormSet, RigheFormSet
+from .models import Rata
 from .models import Fattura
 from .servizi import emetti
 from .xml import ErroreFattura, anteprima_html, genera_xml, nome_file, versione_schema
@@ -28,25 +30,65 @@ def modifica(request, pk=None):
         return redirect("azienda")
     form = FatturaForm(request.POST or None, instance=fattura)
     formset = RigheFormSet(request.POST or None, instance=fattura)
-    if request.method == "POST" and form.is_valid() and formset.is_valid():
-        with transaction.atomic():
-            fattura = form.save()
-            formset.instance = fattura
-            righe = formset.save(commit=False)
-            for oggetto in formset.deleted_objects:
-                oggetto.delete()
-            for ordine, riga in enumerate(righe):
-                riga.ordine = ordine
-                riga.save()
-        messages.success(request, f"Fattura {fattura.numero_documento} salvata come bozza.")
-        return redirect("fattura_dettaglio", pk=fattura.pk)
-    return render(request, "fatture/form.html", {"form": form, "formset": formset, "fattura": fattura if pk else None})
+    rate_formset = RateFormSet(request.POST or None, instance=fattura, prefix="rate")
+    if request.method == "POST" and form.is_valid() and formset.is_valid() and rate_formset.is_valid():
+        a_rate = form.cleaned_data["condizioni_pagamento"] == CondizioniPagamento.RATE
+        rate_inserite = [
+            f for f in rate_formset.forms
+            if (f.instance.pk or f.has_changed()) and not f.cleaned_data.get("DELETE")
+        ]
+        if a_rate and len(rate_inserite) == 1:
+            form.add_error("numero_rate", "Servono almeno 2 rate.")
+        elif a_rate and not rate_inserite and not form.cleaned_data.get("numero_rate"):
+            form.add_error("numero_rate", "Indica il numero di rate oppure inserisci le scadenze.")
+        else:
+            with transaction.atomic():
+                fattura = form.save()
+                formset.instance = fattura
+                righe = formset.save(commit=False)
+                for oggetto in formset.deleted_objects:
+                    oggetto.delete()
+                for ordine, riga in enumerate(righe):
+                    riga.ordine = ordine
+                    riga.save()
+                _salva_rate(fattura, rate_formset, a_rate, bool(rate_inserite))
+            messages.success(request, f"Fattura {fattura.numero_documento} salvata come bozza.")
+            return redirect("fattura_dettaglio", pk=fattura.pk)
+    contesto = {"form": form, "formset": formset, "rate_formset": rate_formset, "fattura": fattura if pk else None}
+    return render(request, "fatture/form.html", contesto)
+
+
+def _salva_rate(fattura, rate_formset, a_rate, rate_inserite):
+    if not a_rate:
+        fattura.rate.all().delete()
+        return
+    rate_formset.instance = fattura
+    rate_formset.save()
+    if not rate_inserite:
+        # Nessuna scadenza inserita a mano: le generiamo dai termini di pagamento.
+        for scadenza in scadenze_rate(fattura.data, fattura.termini_pagamento, fattura.numero_rate):
+            Rata.objects.create(fattura=fattura, data_scadenza=scadenza)
+    fattura.numero_rate = fattura.rate.count()
+    fattura.save(update_fields=["numero_rate"])
 
 
 def dettaglio(request, pk):
     fattura = get_object_or_404(Fattura.objects.select_related("cliente"), pk=pk)
     righe = list(fattura.righe.all())
-    return render(request, "fatture/dettaglio.html", {"fattura": fattura, "righe": righe, "totali": calcola_totali(righe)})
+    totali = calcola_totali(righe)
+    rate, errore_rate = list(fattura.rate.all()), None
+    if rate:
+        try:
+            importi = ripartisci_rate(totali.totale_documento, [r.importo for r in rate])
+            rate = list(zip(rate, importi))
+        except ErroreRate as errore:
+            errore_rate = str(errore)
+            rate = [(r, r.importo) for r in rate]
+    contesto = {
+        "fattura": fattura, "righe": righe, "totali": totali, "rate": rate, "errore_rate": errore_rate,
+        "azienda": Azienda.objects.first(),
+    }
+    return render(request, "fatture/dettaglio.html", contesto)
 
 
 def emissione(request, pk):

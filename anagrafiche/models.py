@@ -49,6 +49,11 @@ class Azienda(Sede):
         default=RIFERIMENTO_FORFETTARIO_PREDEFINITO,
         help_text="Testo inserito nel riepilogo delle righe senza IVA (max 100 caratteri, limite dello schema).",
     )
+    testo_piede = models.TextField(
+        "testo a piè di fattura", blank=True,
+        help_text="Testo libero (es. altri riferimenti normativi) aggiunto in fondo a ogni fattura. "
+        "Nell'XML viene inserito nella Causale.",
+    )
     telefono = models.CharField(max_length=12, blank=True)
     email = models.EmailField(blank=True)
     pec = models.EmailField("PEC", blank=True)

@@ -1,7 +1,7 @@
 {% if form.non_field_errors %}<ul class="errorlist">{% for e in form.non_field_errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
 <div class="griglia">
 {% for campo in form %}
-  <div class="campo">
+  <div class="campo" id="campo-{{ campo.name }}">
     <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
     {{ campo }}
     {% if campo.help_text %}<div class="aiuto">{{ campo.help_text }}</div>{% endif %}

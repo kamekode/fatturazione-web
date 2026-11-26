@@ -12,7 +12,7 @@ import xmlschema
 from django.conf import settings
 from lxml import etree
 
-from .calcoli import calcola_totali, totale_riga
+from .calcoli import ErroreRate, calcola_totali, ripartisci_rate, totale_riga
 
 NS = "http://ivaservizi.agenziaentrate.gov.it/docs/xsd/fatture/v1.2"
 NS_DS = "http://www.w3.org/2000/09/xmldsig#"
@@ -173,9 +173,10 @@ def genera_xml(fattura, azienda, progressivo) -> bytes:
         _sub(bollo, "BolloVirtuale", "SI")
         _sub(bollo, "ImportoBollo", _importo(totali.bollo))
     _sub(generali, "ImportoTotaleDocumento", _importo(totali.totale_documento))
-    causale = fattura.causale.strip()
-    for i in range(0, len(causale), LUNGHEZZA_CAUSALE):
-        _sub(generali, "Causale", causale[i : i + LUNGHEZZA_CAUSALE])
+    # Causale della fattura e, in coda, il testo a piè di fattura dei dati azienda.
+    for testo in (fattura.causale.strip(), azienda.testo_piede.strip()):
+        for i in range(0, len(testo), LUNGHEZZA_CAUSALE):
+            _sub(generali, "Causale", testo[i : i + LUNGHEZZA_CAUSALE])
 
     beni = _sub(body, "DatiBeniServizi")
     for numero, riga in enumerate(righe, start=1):
@@ -206,14 +207,24 @@ def genera_xml(fattura, azienda, progressivo) -> bytes:
 
     pagamento = _sub(body, "DatiPagamento")
     _sub(pagamento, "CondizioniPagamento", fattura.condizioni_pagamento)
-    dettaglio = _sub(pagamento, "DettaglioPagamento")
-    _sub(dettaglio, "ModalitaPagamento", fattura.modalita_pagamento)
-    if fattura.data_scadenza:
-        _sub(dettaglio, "DataScadenzaPagamento", fattura.data_scadenza.isoformat())
-    _sub(dettaglio, "ImportoPagamento", _importo(totali.totale_documento))
-    if fattura.modalita_pagamento == "MP05" and azienda.iban:
-        _opzionale(dettaglio, "IstitutoFinanziario", azienda.istituto_finanziario)
-        _sub(dettaglio, "IBAN", azienda.iban)
+    rate = list(fattura.rate.all()) if fattura.condizioni_pagamento == "TP01" else []
+    if rate:
+        try:
+            importi = ripartisci_rate(totali.totale_documento, [r.importo for r in rate])
+        except ErroreRate as errore:
+            raise ErroreFattura(str(errore)) from errore
+        scadenze = list(zip([r.data_scadenza for r in rate], importi))
+    else:
+        scadenze = [(fattura.data_scadenza, totali.totale_documento)]
+    for scadenza, importo in scadenze:
+        dettaglio = _sub(pagamento, "DettaglioPagamento")
+        _sub(dettaglio, "ModalitaPagamento", fattura.modalita_pagamento)
+        if scadenza:
+            _sub(dettaglio, "DataScadenzaPagamento", scadenza.isoformat())
+        _sub(dettaglio, "ImportoPagamento", _importo(importo))
+        if fattura.modalita_pagamento == "MP05" and azienda.iban:
+            _opzionale(dettaglio, "IstitutoFinanziario", azienda.istituto_finanziario)
+            _sub(dettaglio, "IBAN", azienda.iban)
 
     return etree.tostring(radice, xml_declaration=True, encoding="UTF-8", pretty_print=True)
 

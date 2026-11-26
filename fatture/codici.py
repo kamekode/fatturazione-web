@@ -37,3 +37,15 @@ class CondizioniPagamento(models.TextChoices):
     RATE = "TP01", "TP01 - A rate"
     COMPLETO = "TP02", "TP02 - Pagamento completo"
     ANTICIPO = "TP03", "TP03 - Anticipo"
+
+
+class TerminiPagamento(models.TextChoices):
+    VISTA = "DF", "A vista (data fattura)"
+    GG30 = "30", "30 gg data fattura"
+    GG60 = "60", "60 gg data fattura"
+    GG90 = "90", "90 gg data fattura"
+    FM = "FM", "Fine mese (FM)"
+    GG30_FM = "30FM", "30 gg fine mese"
+    GG60_FM = "60FM", "60 gg fine mese"
+    GG90_FM = "90FM", "90 gg fine mese"
+    LIBERA = "LIBERA", "Data specifica"
