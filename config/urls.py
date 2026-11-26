@@ -20,6 +20,7 @@ urlpatterns = [
     path("fatture/", include("fatture.urls")),
     path("sdi/", include("sdi.urls")),
     path("magazzino/", include("magazzino.urls")),
+    path("cruscotto/", include("cruscotto.urls")),
     path("importa/", include("migrazione.urls")),
     path(settings.ADMIN_URL, admin.site.urls),
 ]

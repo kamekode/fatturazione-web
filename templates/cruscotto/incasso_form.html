@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block titolo %}Registra incasso{% endblock %}
+{% block contenuto %}
+<div class="carta"><h1>Incasso fattura {{ fattura.numero_documento }}</h1>
+<p>{{ fattura.cliente }} · totale {{ posizione.totale|floatformat:"2g" }} € · già incassato {{ posizione.incassato|floatformat:"2g" }} € · residuo <strong>{{ posizione.residuo|floatformat:"2g" }} €</strong></p>
+<form method="post">{% csrf_token %}<input type="hidden" name="torna" value="{{ torna }}">{% include "campi.html" %}
+<div class="azioni"><button class="pulsante" type="submit">Registra</button><a class="pulsante secondario" href="{% if torna == 'scadenziario' %}{% url 'scadenziario' %}{% else %}{% url 'fattura_dettaglio' fattura.pk %}{% endif %}">Annulla</a></div></form></div>
+{% endblock %}

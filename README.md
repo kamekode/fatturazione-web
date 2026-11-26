@@ -11,7 +11,7 @@ cruscotto con previsione delle tasse.
 | 1 | Base, accesso protetto, anagrafiche, articoli, termini di pagamento e rate, XML FatturaPA validato | ✅ |
 | 2 | Invio e ricezione SdI via PEC (poi SDICoop) | ✅ PEC |
 | 3 | Magazzino, DDT, fattura differita, migrazione dati | ✅ |
-| 4 | Scadenziario e cruscotto con previsione tasse | da fare |
+| 4 | Scadenziario e cruscotto con previsione tasse | ✅ forfettario |
 
 ## Cosa fa oggi
 
@@ -63,6 +63,21 @@ Una fattura emessa non si può più modificare né eliminare.
   dello schema ufficiale). Eliminando la bozza i DDT tornano da fatturare.
 - Una fattura emessa senza DDT scarica gli articoli a magazzino (una nota di credito li ricarica); se lo SdI
   la scarta e torna in bozza, lo scarico viene annullato. Le fatture importate non muovono il magazzino.
+
+### Scadenziario e cruscotto
+
+- **Incassi**: dal dettaglio di una fattura emessa (o dallo scadenziario) si registrano i pagamenti, anche parziali.
+- **Scadenziario**: fatture con residuo da incassare ordinate per scadenza (le rate vengono coperte in ordine),
+  filtro sulle scadute, e i prossimi pagamenti d'imposta stimati.
+- **Cruscotto** per anno: fatturato (per data fattura), incassato (per data incasso), da incassare, scaduto,
+  grafico mese per mese, clienti principali.
+- **Stima del forfettario** con la spiegazione di ogni numero: ricavi incassati (criterio di cassa) × coefficiente
+  di redditività, meno i contributi versati nell'anno, × aliquota (15% o 5%); acconti già versati, saldo di giugno,
+  acconti dell'anno dopo col metodo storico (50% + 50%, soglie 51,65 e 257,52 euro), contributi INPS stimati con i
+  parametri del **profilo fiscale** (artigiani/commercianti con riduzione 35% facoltativa, o gestione separata),
+  quanto mettere da parte. Avvisi sulle soglie di 85.000 e 100.000 euro.
+- **Versamenti**: registro degli F24 pagati (imposta e contributi), usato per acconti, saldo e deduzione dei contributi.
+- Il calcolo è organizzato per regime (`cruscotto/fisco.py`): il regime ordinario si aggiungerà come nuova classe.
 
 ### Importazione da Flextax
 

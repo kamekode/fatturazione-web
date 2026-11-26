@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block titolo %}Profilo fiscale{% endblock %}
+{% block contenuto %}
+<div class="carta"><h1>Profilo fiscale</h1>
+<p class="aiuto">Servono per stimare imposte e contributi nel cruscotto.
+Coefficiente e aliquota vengono dalle regole del forfettario dell'Agenzia delle Entrate: per i codici ATECO 33 (riparazione e manutenzione) e 95 (riparazione di computer e beni personali) il coefficiente è il 67%.
+I valori INPS (reddito minimale, contributi fissi, aliquota) cambiano ogni anno: prendili dalla circolare INPS dell'anno o dal tuo cassetto previdenziale.</p>
+<form method="post">{% csrf_token %}{% include "campi.html" %}<button class="pulsante" type="submit">Salva</button></form></div>
+{% endblock %}
