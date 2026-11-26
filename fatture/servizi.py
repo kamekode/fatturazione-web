@@ -2,6 +2,8 @@ from django.db import transaction
 
 from anagrafiche.models import Azienda
 
+from magazzino.servizi import annulla_scarichi_fattura, scarica_fattura
+
 from .models import Contatore, Fattura
 from .xml import ErroreFattura, genera_xml, progressivo_da_numero, valida, versione_schema
 
@@ -28,6 +30,7 @@ def emetti(fattura: Fattura) -> Fattura:
         fattura.progressivo_invio = progressivo
         fattura.stato = Fattura.Stato.EMESSA
         fattura.save(update_fields=["xml", "progressivo_invio", "stato", "modificata_il"])
+        scarica_fattura(fattura)
     return fattura
 
 
@@ -38,6 +41,7 @@ def riporta_in_bozza(fattura: Fattura) -> Fattura:
     """
     if fattura.stato != Fattura.Stato.SCARTATA:
         raise ErroreFattura("Solo una fattura scartata dallo SdI può tornare in bozza.")
+    annulla_scarichi_fattura(fattura)
     fattura.stato = Fattura.Stato.BOZZA
     fattura.xml = ""
     fattura.progressivo_invio = ""

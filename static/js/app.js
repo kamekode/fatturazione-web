@@ -18,6 +18,10 @@
       delete campo.dataset.valorePrecedente;
     }
   });
+  // Pulsanti data-stampa: aprono la finestra di stampa del browser.
+  document.addEventListener("click", function (evento) {
+    if (evento.target.closest && evento.target.closest("[data-stampa]")) window.print();
+  });
   // Moduli con data-conferma: chiedono conferma prima dell'invio (es. eliminazione bozza).
   document.addEventListener("submit", function (evento) {
     var messaggio = evento.target.dataset && evento.target.dataset.conferma;

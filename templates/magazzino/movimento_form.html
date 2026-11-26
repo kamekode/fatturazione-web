@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block titolo %}Nuovo movimento{% endblock %}
+{% block contenuto %}
+<div class="carta"><h1>Nuovo movimento di magazzino</h1>
+<p class="aiuto">Carico: merce entrata (acquisti, resi). Scarico: merce uscita senza DDT né fattura (uso interno, guasti).
+Rettifica: scrivi la giacenza che hai contato e il programma registra la differenza.</p>
+<form method="post">{% csrf_token %}{% include "campi.html" %}
+<div class="azioni"><button class="pulsante" type="submit">Registra</button><a class="pulsante secondario" href="{% url 'giacenze' %}">Annulla</a></div></form></div>
+{% endblock %}

@@ -267,3 +267,21 @@ class VisteTest(BaseSdI):
         ConfigurazionePEC.objects.all().delete()
         risposta = self.client.post(reverse("controlla_pec"), {"torna": "//esempio.com"})
         self.assertEqual(risposta["Location"], "/")
+
+
+class P7mTest(TestCase):
+    def test_der_passato_intatto(self):
+        # La firma è casuale e il DER può finire con un byte come 0x20 o 0x0A: non va tagliato.
+        dati = b"\x30\x03\x02\x01\x20"
+        with mock.patch("sdi.messaggi.cms.ContentInfo.load", side_effect=ValueError) as load:
+            with self.assertRaises(ValueError):
+                estrai_da_p7m(dati)
+        load.assert_called_once_with(dati)
+
+    def test_p7m_in_base64(self):
+        import base64
+
+        from django.conf import settings
+
+        xml = (settings.SCHEMI_DIR / "IT01234567890_FPR01.xml").read_bytes()
+        self.assertEqual(estrai_da_p7m(base64.encodebytes(fattura_firmata(xml)) + b"\n"), xml)

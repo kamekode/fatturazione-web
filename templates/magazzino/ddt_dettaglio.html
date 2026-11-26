@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block titolo %}DDT {{ ddt.numero_documento }}{% endblock %}
+{% block contenuto %}
+<div class="carta">
+<div class="azioni"><h1 class="espandi">{{ ddt }}</h1><span class="etichetta {% if ddt.stato == 'confermato' %}emessa{% endif %}">{{ ddt.get_stato_display }}</span></div>
+<p><strong>Cliente:</strong> <a href="{% url 'cliente_modifica' ddt.cliente.pk %}">{{ ddt.cliente }}</a></p>
+<p><strong>Causale:</strong> {{ ddt.causale_trasporto }} · trasporto a cura del {{ ddt.get_trasporto_a_cura_display|lower }}{% if ddt.vettore %} ({{ ddt.vettore }}){% endif %}</p>
+{% if ddt.destinazione %}<p><strong>Destinazione:</strong> {{ ddt.destinazione|linebreaksbr }}</p>{% endif %}
+<p class="aiuto">{% if ddt.aspetto_beni %}Aspetto: {{ ddt.aspetto_beni }} · {% endif %}{% if ddt.numero_colli %}Colli: {{ ddt.numero_colli }} · {% endif %}{% if ddt.peso_kg %}Peso: {{ ddt.peso_kg }} kg · {% endif %}{% if ddt.inizio_trasporto %}Inizio trasporto: {{ ddt.inizio_trasporto|date:"d/m/Y H:i" }}{% endif %}</p>
+{% if ddt.note %}<p><strong>Note:</strong> {{ ddt.note|linebreaksbr }}</p>{% endif %}
+</div>
+<div class="carta scorri"><table>
+<tr><th>Codice</th><th>Descrizione</th><th class="num">Q.tà</th><th class="num">Prezzo</th></tr>
+{% for r in righe %}<tr><td>{{ r.articolo.codice|default:"" }}</td><td>{{ r.descrizione }}</td><td class="num">{{ r.quantita|floatformat:"-4" }} {{ r.unita_misura }}</td><td class="num">{% if r.prezzo_unitario is not None %}{{ r.prezzo_unitario|floatformat:"-6" }}{% else %}-{% endif %}</td></tr>{% endfor %}
+</table></div>
+{% if ddt.fattura %}
+<div class="carta">Fatturato con la <a href="{% url 'fattura_dettaglio' ddt.fattura.pk %}">fattura {{ ddt.fattura.numero_documento }}</a>.</div>
+{% elif ddt.fatturabile %}
+<div class="carta aiuto">Da fatturare entro il {{ termine|date:"d/m/Y" }} (fattura differita: giorno 15 del mese successivo al DDT).</div>
+{% endif %}
+<div class="azioni">
+  <a class="pulsante secondario" href="{% url 'ddt_stampa' ddt.pk %}" target="_blank" rel="noopener">Stampa</a>
+  <a class="pulsante secondario" href="{% url 'ddt_pdf' ddt.pk %}">Scarica PDF</a>
+{% if ddt.modificabile %}
+  <a class="pulsante secondario" href="{% url 'ddt_modifica' ddt.pk %}">Modifica</a>
+  <form class="in-linea" method="post" action="{% url 'ddt_conferma' ddt.pk %}">{% csrf_token %}<button class="pulsante" type="submit">Conferma e scarica dal magazzino</button></form>
+  <form class="in-linea" method="post" action="{% url 'ddt_elimina' ddt.pk %}" data-conferma="Eliminare definitivamente questa bozza di DDT?">{% csrf_token %}<button class="pulsante pericolo" type="submit">Elimina bozza</button></form>
+{% else %}
+  {% if ddt.fatturabile %}<a class="pulsante" href="{% url 'fattura_differita' %}?cliente={{ ddt.cliente.pk }}">Crea fattura differita</a>{% endif %}
+  {% if not ddt.fattura %}<form class="in-linea" method="post" action="{% url 'ddt_riapri' ddt.pk %}" data-conferma="Riportare il DDT in bozza? Gli scarichi di magazzino verranno annullati.">{% csrf_token %}<button class="pulsante secondario" type="submit">Riporta in bozza</button></form>{% endif %}
+{% endif %}
+</div>
+{% endblock %}

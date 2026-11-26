@@ -99,7 +99,7 @@ def dettaglio(request, pk):
     contesto = {
         "fattura": fattura, "righe": righe, "totali": totali, "rate": rate, "errore_rate": errore_rate,
         "azienda": Azienda.objects.first(), "notifiche": fattura.notifiche.all(),
-        "incassi": fattura.incassi.all(),
+        "incassi": fattura.incassi.all(), "elenco_ddt": fattura.ddt_fatturati.all(),
     }
     return render(request, "fatture/dettaglio.html", contesto)
 

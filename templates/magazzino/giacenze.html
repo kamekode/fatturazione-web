@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block titolo %}Magazzino{% endblock %}
+{% block contenuto %}
+<div class="carta">
+<div class="azioni"><h1 class="espandi">Magazzino</h1><a class="pulsante" href="{% url 'movimento_nuovo' %}">Nuovo movimento</a></div>
+<p class="aiuto">Qui compaiono gli articoli con l'opzione "gestito a magazzino". I carichi e le rettifiche d'inventario si registrano a mano;
+gli scarichi avvengono da soli quando confermi un DDT o emetti una fattura senza DDT.</p>
+<div class="scorri"><table>
+<tr><th>Codice</th><th>Descrizione</th><th class="num">Giacenza</th><th>U.m.</th><th></th></tr>
+{% for a in articoli %}<tr><td><a href="{% url 'movimenti' a.pk %}">{{ a.codice }}</a></td><td>{{ a.descrizione|truncatechars:80 }}</td>
+<td class="num{% if a.giacenza < 0 %} errore{% endif %}">{{ a.giacenza|floatformat:"-4" }}</td><td>{{ a.unita_misura }}</td>
+<td>{% if a.giacenza < 0 %}<span class="errore">Giacenza negativa</span>{% elif a.scorta_minima is not None and a.giacenza < a.scorta_minima %}<span class="etichetta scartata">Sotto scorta</span>{% endif %}</td></tr>
+{% empty %}<tr><td colspan="5">Nessun articolo gestito a magazzino. Attiva l'opzione nella scheda di un <a href="{% url 'articoli' %}">articolo</a> di tipo bene.</td></tr>{% endfor %}
+</table></div></div>
+{% endblock %}

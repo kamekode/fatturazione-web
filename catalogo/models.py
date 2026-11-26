@@ -6,10 +6,7 @@ from fatture.codici import Natura
 
 
 class Articolo(models.Model):
-    """Prodotto o servizio da riportare nelle righe di fattura.
-
-    La giacenza di magazzino verrà aggiunta nel passo dedicato al magazzino.
-    """
+    """Prodotto o servizio da riportare nelle righe di fattura e dei DDT."""
 
     class Tipo(models.TextChoices):
         BENE = "bene", "Bene"
@@ -26,6 +23,14 @@ class Articolo(models.Model):
         help_text="Obbligatoria se l'aliquota è 0. Nel forfettario: N2.2.",
     )
     attivo = models.BooleanField(default=True)
+    gestito_a_magazzino = models.BooleanField(
+        "gestito a magazzino", default=False,
+        help_text="Tiene il conto della giacenza: carichi a mano, scarichi automatici con DDT e fatture.",
+    )
+    scorta_minima = models.DecimalField(
+        max_digits=20, decimal_places=4, null=True, blank=True,
+        help_text="Facoltativa: sotto questa quantità l'articolo viene segnalato nel magazzino.",
+    )
 
     class Meta:
         verbose_name_plural = "articoli"

@@ -1,0 +1,46 @@
+{% load static %}<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DDT {{ ddt.numero_documento }}</title>
+<link rel="stylesheet" href="{% static 'css/app.css' %}">
+</head>
+<body class="foglio">
+<div class="solo-schermo azioni"><button class="pulsante" type="button" data-stampa>Stampa</button><a class="pulsante secondario" href="{% url 'ddt_pdf' ddt.pk %}">Scarica PDF</a></div>
+<h1>Documento di trasporto n. {{ ddt.numero_documento }} del {{ ddt.data|date:"d/m/Y" }}</h1>
+<p class="aiuto">D.P.R. 472/1996</p>
+<div class="due-colonne">
+  <div class="riquadro"><div class="aiuto">Mittente</div>
+    <strong>{{ azienda.ragione_sociale }}</strong><br>
+    {{ azienda.indirizzo }}{% if azienda.numero_civico %} {{ azienda.numero_civico }}{% endif %}<br>
+    {{ azienda.cap }} {{ azienda.comune }}{% if azienda.provincia %} ({{ azienda.provincia }}){% endif %}<br>
+    P.IVA {{ azienda.partita_iva }} · C.F. {{ azienda.codice_fiscale }}
+  </div>
+  <div class="riquadro"><div class="aiuto">Destinatario</div>
+    <strong>{{ ddt.cliente.ragione_sociale }}</strong><br>
+    {{ ddt.cliente.indirizzo }}{% if ddt.cliente.numero_civico %} {{ ddt.cliente.numero_civico }}{% endif %}<br>
+    {{ ddt.cliente.cap }} {{ ddt.cliente.comune }}{% if ddt.cliente.provincia %} ({{ ddt.cliente.provincia }}){% endif %}<br>
+    {% if ddt.cliente.partita_iva %}P.IVA {{ ddt.cliente.partita_iva }}{% endif %}{% if ddt.cliente.codice_fiscale %} · C.F. {{ ddt.cliente.codice_fiscale }}{% endif %}
+  </div>
+</div>
+<div class="riquadro"><div class="aiuto">Luogo di destinazione</div>{% if ddt.destinazione %}{{ ddt.destinazione|linebreaksbr }}{% else %}Sede del destinatario{% endif %}</div>
+<table class="bordata">
+<tr><th>Causale del trasporto</th><th>Trasporto a cura del</th><th>Inizio trasporto</th></tr>
+<tr><td>{{ ddt.causale_trasporto }}</td><td>{{ ddt.get_trasporto_a_cura_display }}{% if ddt.vettore %}: {{ ddt.vettore }}{% endif %}</td><td>{{ ddt.inizio_trasporto|date:"d/m/Y H:i"|default:"" }}</td></tr>
+</table>
+<table class="bordata">
+<tr><th>Codice</th><th>Descrizione dei beni</th><th>U.m.</th><th class="num">Quantità</th></tr>
+{% for r in righe %}<tr><td>{{ r.articolo.codice|default:"" }}</td><td>{{ r.descrizione }}</td><td>{{ r.unita_misura }}</td><td class="num">{{ r.quantita|floatformat:"-4" }}</td></tr>{% endfor %}
+</table>
+<table class="bordata">
+<tr><th>Aspetto esteriore dei beni</th><th>N. colli</th><th>Peso (kg)</th></tr>
+<tr><td>{{ ddt.aspetto_beni }}</td><td>{{ ddt.numero_colli|default:"" }}</td><td>{{ ddt.peso_kg|default:"" }}</td></tr>
+</table>
+{% if ddt.note %}<div class="riquadro"><div class="aiuto">Note</div>{{ ddt.note|linebreaksbr }}</div>{% endif %}
+<div class="tre-colonne firme">
+  <div>Firma del mittente</div><div>Firma del vettore</div><div>Firma del destinatario</div>
+</div>
+<script src="{% static 'js/app.js' %}"></script>
+</body>
+</html>

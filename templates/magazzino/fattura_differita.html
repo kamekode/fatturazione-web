@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block titolo %}Fattura differita{% endblock %}
+{% block contenuto %}
+<div class="carta"><h1>Fattura differita dai DDT</h1>
+<p class="aiuto">Scegli i DDT confermati di un cliente: viene creata una fattura TD24 in bozza con tutte le righe e, nell'XML,
+i riferimenti a ogni DDT (blocco DatiDDT con numero, data e linee). Poi puoi controllarla ed emetterla come le altre.</p>
+<form method="get" class="azioni">
+  <label for="scelta-cliente">Cliente</label>
+  <select name="cliente" id="scelta-cliente">
+    <option value="">Tutti</option>
+    {% for c in clienti %}<option value="{{ c.pk }}"{% if cliente and cliente.pk == c.pk %} selected{% endif %}>{{ c }}</option>{% endfor %}
+  </select>
+  <button class="pulsante secondario" type="submit">Filtra</button>
+</form>
+</div>
+<div class="carta">
+{% if form.fields.ddt.queryset %}
+<form method="post">{% csrf_token %}{% include "campi.html" %}
+<div class="azioni"><button class="pulsante" type="submit">Crea la fattura in bozza</button></div></form>
+{% else %}<p>Non ci sono DDT da fatturare{% if cliente %} per {{ cliente }}{% endif %}.</p>{% endif %}
+</div>
+{% endblock %}

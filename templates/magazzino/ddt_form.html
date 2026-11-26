@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% load static %}
+{% block titolo %}{% if ddt %}DDT {{ ddt.numero_documento }}{% else %}Nuovo DDT{% endif %}{% endblock %}
+{% block contenuto %}
+<form method="post" id="modulo-ddt">{% csrf_token %}
+<div class="carta"><h1>{% if ddt %}DDT {{ ddt.numero_documento }}{% else %}Nuovo DDT{% endif %}</h1>
+{% include "campi.html" %}
+<datalist id="causali-trasporto">
+  <option value="Vendita"><option value="Reso merce riparata"><option value="Conto riparazione"><option value="Conto lavorazione">
+  <option value="Conto visione"><option value="Reso a fornitore"><option value="Omaggio">
+</datalist>
+</div>
+<div class="carta"><h2>Merce trasportata</h2>
+<p class="aiuto">Scegliendo un articolo la riga si compila con i suoi dati. Il prezzo non compare sul DDT stampato: serve solo per la fattura differita.</p>
+{{ formset.management_form }}
+{% if formset.non_form_errors %}<ul class="errorlist">{% for e in formset.non_form_errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+<div class="scorri"><table>
+<thead><tr><th>Articolo</th><th>Descrizione</th><th>Q.tà</th><th>U.m.</th><th>Prezzo</th><th></th></tr></thead>
+<tbody id="righe-corpo">{% for f in formset %}{% include "magazzino/riga_ddt.html" %}{% endfor %}</tbody>
+</table></div>
+<template id="riga-vuota">{% with f=formset.empty_form %}{% include "magazzino/riga_ddt.html" %}{% endwith %}</template>
+<button type="button" class="pulsante secondario" id="aggiungi-riga">+ Aggiungi riga</button>
+</div>
+<div class="azioni"><button class="pulsante" type="submit">Salva bozza</button><a class="pulsante secondario" href="{% if ddt %}{% url 'ddt_dettaglio' ddt.pk %}{% else %}{% url 'ddt_elenco' %}{% endif %}">Annulla</a></div>
+</form>
+{{ articoli|json_script:"dati-articoli" }}
+<script src="{% static 'js/ddt.js' %}"></script>
+{% endblock %}

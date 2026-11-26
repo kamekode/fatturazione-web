@@ -4,6 +4,7 @@
 <div class="carta">
 <div class="azioni"><h1 class="espandi">{{ fattura }}</h1><span class="etichetta {{ fattura.stato }}">{{ fattura.get_stato_display }}</span></div>
 <p><strong>Cliente:</strong> <a href="{% url 'cliente_modifica' fattura.cliente.pk %}">{{ fattura.cliente }}</a> · codice destinatario {{ fattura.cliente.codice_destinatario }}{% if fattura.cliente.pec %} · PEC {{ fattura.cliente.pec }}{% endif %}</p>
+{% if elenco_ddt %}<p><strong>DDT:</strong> {% for d in elenco_ddt %}<a href="{% url 'ddt_dettaglio' d.pk %}">n. {{ d.numero_documento }} del {{ d.data|date:"d/m/Y" }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}</p>{% endif %}
 {% if fattura.causale %}<p><strong>Causale:</strong> {{ fattura.causale }}</p>{% endif %}
 <p><strong>Pagamento:</strong> {{ fattura.get_modalita_pagamento_display }} · {{ fattura.get_condizioni_pagamento_display }}{% if not rate %} · {{ fattura.get_termini_pagamento_display }}{% if fattura.data_scadenza %}, scadenza {{ fattura.data_scadenza|date:"d/m/Y" }}{% endif %}{% endif %}</p>
 </div>
