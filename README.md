@@ -8,8 +8,8 @@ cruscotto con previsione delle tasse.
 
 | Passo | Contenuto | Stato |
 |---|---|---|
-| 1 | Base, accesso protetto, anagrafiche, articoli, termini di pagamento e rate, XML FatturaPA validato | ✅ in questa versione |
-| 2 | Invio e ricezione SdI via PEC (poi SDICoop) | da fare |
+| 1 | Base, accesso protetto, anagrafiche, articoli, termini di pagamento e rate, XML FatturaPA validato | ✅ |
+| 2 | Invio e ricezione SdI via PEC (poi SDICoop) | ✅ PEC |
 | 3 | Magazzino, DDT, fattura differita, migrazione dati | da fare |
 | 4 | Scadenziario e cruscotto con previsione tasse | da fare |
 
@@ -32,6 +32,21 @@ cruscotto con previsione delle tasse.
   con nome file e progressivo di invio conformi. Anteprima con il foglio di stile ufficiale.
 
 Una fattura emessa non si può più modificare né eliminare.
+
+### Invio e ricezione con lo SdI via PEC
+
+- **Impostazioni PEC**: indirizzo, utente, password (salvata cifrata), server SMTP e IMAP. Valori proposti per Aruba
+  (`smtps.pec.aruba.it:465`, `imaps.pec.aruba.it:993`, SSL), con pulsante per provare la connessione.
+- **Invio**: la fattura emessa parte come allegato PEC verso lo SdI. Il primo invio va a `sdi01@pec.fatturapa.it`;
+  quando lo SdI risponde da un altro indirizzo `sdiNN@pec.fatturapa.it`, quello viene salvato per gli invii successivi
+  (regola delle specifiche tecniche SdI, servizio PEC). L'indirizzo resta modificabile.
+- **Controlla PEC** legge i nuovi messaggi (senza segnarli come letti) e riconosce solo quelli dello SdI:
+  - ricevuta di consegna (RC) → fattura *Consegnata*;
+  - notifica di scarto (NS) → fattura *Scartata*, con gli errori; si può riportare in bozza, correggere e riemettere
+    con lo stesso numero;
+  - mancata consegna (MC) → *Non recapitata*: la fattura è emessa e disponibile al cliente nella sua area riservata;
+  - fatture dei fornitori (anche firmate `.p7m`) → sezione **Ricevute**, con anteprima e file originale conservato.
+- Il controllo si può pianificare: `python manage.py controlla_pec` (ad esempio con l'Utilità di pianificazione di Windows).
 
 Le fonti ufficiali usate (schemi, fogli di stile, esempi) sono elencate in [`schemi/FONTI.md`](schemi/FONTI.md).
 

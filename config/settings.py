@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     "anagrafiche",
     "catalogo",
     "fatture",
+    "sdi",
 ]
 
 MIDDLEWARE = [

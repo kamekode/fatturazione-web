@@ -12,10 +12,13 @@
   <a class="marchio" href="{% url 'home' %}">Fatturazione Web</a>
   <nav>
     <a href="{% url 'fatture' %}">Fatture</a>
+    <a href="{% url 'ricevute' %}">Ricevute</a>
     <a href="{% url 'clienti' %}">Clienti</a>
     <a href="{% url 'articoli' %}">Articoli</a>
     <a href="{% url 'azienda' %}">Dati azienda</a>
+    <a href="{% url 'impostazioni_pec' %}">Impostazioni PEC</a>
   </nav>
+  <form class="in-linea" method="post" action="{% url 'controlla_pec' %}">{% csrf_token %}<input type="hidden" name="torna" value="{{ request.path }}"><button class="pulsante" type="submit">Controlla PEC</button></form>
   <a href="{% url 'password_change' %}">Password</a>
   <form class="in-linea" method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="pulsante secondario" type="submit">Esci</button></form>
 </div></header>

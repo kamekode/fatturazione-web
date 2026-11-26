@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block titolo %}Fatture ricevute{% endblock %}
+{% block contenuto %}
+<div class="carta">
+<div class="azioni"><h1 class="espandi">Fatture ricevute</h1>
+<form class="in-linea" method="post" action="{% url 'controlla_pec' %}">{% csrf_token %}<input type="hidden" name="torna" value="{{ request.path }}"><button class="pulsante" type="submit">Controlla PEC</button></form></div>
+<div class="scorri"><table>
+<tr><th>Data</th><th>Numero</th><th>Fornitore</th><th>Tipo</th><th class="num">Totale</th></tr>
+{% for f in fatture %}<tr><td>{{ f.data|date:"d/m/Y" }}</td><td><a href="{% url 'ricevuta_dettaglio' f.pk %}">{{ f.numero|default:"-" }}</a></td><td>{{ f.fornitore }}</td><td>{{ f.tipo_documento }}</td><td class="num">{% if f.totale is not None %}{{ f.totale }} €{% endif %}</td></tr>
+{% empty %}<tr><td colspan="5">Nessuna fattura ricevuta. Premi "Controlla PEC" per leggere la casella.</td></tr>{% endfor %}
+</table></div></div>
+{% endblock %}

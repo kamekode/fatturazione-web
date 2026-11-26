@@ -11,7 +11,7 @@ from .codici import CondizioniPagamento
 from .forms import FatturaForm, RateFormSet, RigheFormSet
 from .models import Rata
 from .models import Fattura
-from .servizi import emetti
+from .servizi import emetti, riporta_in_bozza
 from .xml import ErroreFattura, anteprima_html, genera_xml, nome_file, versione_schema
 
 
@@ -98,7 +98,7 @@ def dettaglio(request, pk):
             rate = [(r, r.importo) for r in rate]
     contesto = {
         "fattura": fattura, "righe": righe, "totali": totali, "rate": rate, "errore_rate": errore_rate,
-        "azienda": Azienda.objects.first(),
+        "azienda": Azienda.objects.first(), "notifiche": fattura.notifiche.all(),
     }
     return render(request, "fatture/dettaglio.html", contesto)
 
@@ -156,3 +156,15 @@ def anteprima(request, pk):
     # Il foglio di stile ufficiale usa stili inline: li consentiamo solo in questa pagina, senza script.
     risposta["Content-Security-Policy"] = "default-src 'none'; style-src 'unsafe-inline'; img-src data:; frame-ancestors 'none'"
     return risposta
+
+
+def riapri(request, pk):
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+    fattura = get_object_or_404(Fattura, pk=pk)
+    try:
+        riporta_in_bozza(fattura)
+        messages.success(request, "Fattura riportata in bozza: correggila e riemettila con lo stesso numero.")
+    except ErroreFattura as errore:
+        messages.error(request, str(errore))
+    return redirect("fattura_dettaglio", pk=pk)

@@ -42,3 +42,8 @@ label.spunta{display:flex;gap:8px;align-items:center;font-size:15px;color:var(--
 #blocco-totale .totali{max-width:420px;margin-left:auto}
 .elimina-riga{border:1px solid var(--bordo);background:transparent;color:var(--errore);border-radius:6px;padding:6px 10px;cursor:pointer;font:inherit}
 .elimina-riga:hover{border-color:var(--errore)}
+.errore{color:var(--errore)}
+.carta.avviso{border-color:var(--avviso)}
+.etichetta.inviata{border-color:var(--primario);color:var(--primario)}
+.etichetta.consegnata{border-color:var(--ok);color:var(--ok)}
+.etichetta.scartata,.etichetta.non_recapitata{border-color:var(--errore);color:var(--errore)}

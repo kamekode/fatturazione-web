@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block titolo %}Fattura ricevuta{% endblock %}
+{% block contenuto %}
+<div class="carta">
+<h1>{{ fattura.fornitore }}</h1>
+<p><strong>Numero:</strong> {{ fattura.numero }} · <strong>Data:</strong> {{ fattura.data|date:"d/m/Y" }} · <strong>Tipo:</strong> {{ fattura.tipo_documento }}</p>
+<p><strong>Totale:</strong> {% if fattura.totale is not None %}{{ fattura.totale }} €{% else %}-{% endif %}</p>
+<p class="aiuto">ID fiscale fornitore {{ fattura.fornitore_id_fiscale }} · file {{ fattura.nome_file }}{% if fattura.identificativo_sdi %} · ID SdI {{ fattura.identificativo_sdi }}{% endif %} · ricevuta il {{ fattura.ricevuta_il|date:"d/m/Y H:i" }}</p>
+<div class="azioni">
+  <a class="pulsante" href="{% url 'ricevuta_anteprima' fattura.pk %}" target="_blank" rel="noopener">Anteprima</a>
+  <a class="pulsante secondario" href="{% url 'ricevuta_file' fattura.pk %}">Scarica file originale</a>
+  <a href="{% url 'ricevute' %}">Torna all'elenco</a>
+</div></div>
+{% endblock %}

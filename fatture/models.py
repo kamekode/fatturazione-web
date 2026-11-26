@@ -15,6 +15,10 @@ class Fattura(models.Model):
     class Stato(models.TextChoices):
         BOZZA = "bozza", "Bozza"
         EMESSA = "emessa", "Emessa (XML generato)"
+        INVIATA = "inviata", "Inviata allo SdI"
+        CONSEGNATA = "consegnata", "Consegnata"
+        NON_RECAPITATA = "non_recapitata", "Non recapitata (disponibile nel cassetto fiscale)"
+        SCARTATA = "scartata", "Scartata dallo SdI"
 
     cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT, related_name="fatture")
     tipo_documento = models.CharField(max_length=4, choices=TipoDocumento.choices, default=TipoDocumento.FATTURA)
@@ -34,9 +38,11 @@ class Fattura(models.Model):
         "bollo a carico del cliente", default=True,
         help_text="Se il bollo è dovuto, i 2 € vengono aggiunti al totale da pagare.",
     )
-    stato = models.CharField(max_length=10, choices=Stato.choices, default=Stato.BOZZA, editable=False)
+    stato = models.CharField(max_length=15, choices=Stato.choices, default=Stato.BOZZA, editable=False)
     progressivo_invio = models.CharField(max_length=5, blank=True, editable=False)
     xml = models.TextField(blank=True, editable=False)
+    inviata_il = models.DateTimeField(null=True, blank=True, editable=False)
+    identificativo_sdi = models.CharField(max_length=20, blank=True, editable=False)
     creata_il = models.DateTimeField(auto_now_add=True)
     modificata_il = models.DateTimeField(auto_now=True)
 
