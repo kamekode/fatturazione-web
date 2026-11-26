@@ -31,3 +31,22 @@ Dal documento ufficiale "Allegato A - Specifiche tecniche vers 1.9.1" (Agenzia d
 - fatture firmate accettate in CAdES (`.xml.p7m`) o XAdES (`.xml`).
 
 Parametri della casella PEC Aruba: https://guide.aruba.it/pec/configurazione-programmi-di-posta/client-posta-e-dispositivi-mobili
+
+## Regime forfetario (stima di imposte e acconti)
+
+- Agenzia delle Entrate, "Regime forfetario - Che cos'è": coefficiente di redditività sui ricavi, deduzione dei
+  contributi previdenziali obbligatori, imposta sostitutiva del 15% (5% per i primi cinque anni con i requisiti),
+  soglie di 85.000 euro (accesso) e 100.000 euro (uscita nello stesso anno).
+  https://www.agenziaentrate.gov.it/portale/regime-forfetario-le-regole-2020-/infogen-regime-forfetario-le-regole-2020-
+- Istruzioni Redditi PF, fascicolo 3, quadro LM: tabella dei coefficienti (allegato 2 alla L. 145/2018),
+  "Altre attività economiche" 67% (comprende i codici ATECO 33 e 95).
+  https://www.agenziaentrate.gov.it/portale/documents/20143/8836009/PF3_istruzioni_2025_agg+12+05+2025.pdf
+- Istruzioni Redditi 2026: acconto non dovuto fino a 51,65 euro, unica soluzione entro il 30 novembre sotto
+  257,52 euro, altrimenti due rate (giugno e novembre); scadenze di sabato o festive al primo giorno feriale.
+  https://www.agenziaentrate.gov.it/portale/documents/d/guest/pf2_istruzioni_2026
+- Risoluzione 93/E del 12 novembre 2019: per i soggetti ISA, compresi i forfetari, le due rate di acconto
+  dell'imposta sostitutiva sono del 50% ciascuna.
+  https://www.agenziaentrate.gov.it/portale/documents/20143/2139920/Risoluzione+n.+93+del+12+novembre+2019.pdf
+
+I parametri dei contributi INPS (minimale, contributi fissi, aliquote) cambiano ogni anno e non sono inclusi:
+si inseriscono nel profilo fiscale dalla circolare INPS dell'anno.

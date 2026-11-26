@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "fatture",
     "sdi",
     "magazzino",
+    "cruscotto",
     "migrazione",
 ]
 

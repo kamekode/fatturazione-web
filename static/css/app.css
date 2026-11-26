@@ -13,7 +13,7 @@ main{max-width:1100px;margin:0 auto;padding:20px 16px}
 .griglia{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(220px,1fr))}
 table{width:100%;border-collapse:collapse}
 th,td{text-align:left;padding:8px;border-bottom:1px solid var(--bordo);vertical-align:top}
-td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 .scorri{overflow-x:auto}
 label{display:block;font-size:13px;color:var(--tenue);margin-bottom:2px}
 input,select,textarea{width:100%;padding:7px 8px;border:1px solid var(--bordo);border-radius:6px;background:var(--carta);color:var(--testo);font:inherit}
@@ -62,3 +62,13 @@ table.bordata .num{text-align:right}
   .foglio{background:#fff;color:#000;padding:0;max-width:none}
   .foglio .riquadro,.foglio table.bordata th,.foglio table.bordata td{border-color:#000}
 }
+/* Cruscotto */
+svg.grafico{width:100%;max-width:720px;height:auto;display:block}
+.barra-fatturato{fill:var(--primario)}
+.barra-incassato{fill:var(--ok)}
+.etichetta-grafico{fill:var(--tenue);font-size:11px}
+.legenda{display:inline-block;width:10px;height:10px;border-radius:2px;margin:0 4px 0 10px}
+.legenda.fatturato{background:var(--primario)}
+.legenda.incassato{background:var(--ok)}
+tr.evidenza td{font-weight:600}
+.avviso-testo{color:var(--avviso)}

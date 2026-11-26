@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block titolo %}Scadenziario{% endblock %}
+{% block contenuto %}
+<div class="carta">
+<div class="azioni"><h1 class="espandi">Scadenziario</h1>
+{% if filtro == "scadute" %}<a class="pulsante secondario" href="{% url 'scadenziario' %}">Mostra tutte</a>{% else %}<a class="pulsante secondario" href="?filtro=scadute">Solo scadute</a>{% endif %}</div>
+<p>Da incassare: <strong>{{ totale|floatformat:"2g" }} €</strong></p>
+<div class="scorri"><table>
+<tr><th>Scadenza</th><th>Fattura</th><th>Cliente</th><th class="num">Totale</th><th class="num">Incassato</th><th class="num">Residuo</th><th></th></tr>
+{% for p in aperte %}{% with s=p.prossima_scadenza %}
+<tr><td>{% if s.data %}<span{% if s.data < oggi %} class="errore"{% endif %}>{{ s.data|date:"d/m/Y" }}</span>{% if s.data < oggi %} <span class="etichetta scartata">scaduta</span>{% endif %}{% if p.scadenze|length > 1 %}<br><span class="aiuto">rata {{ s.importo|floatformat:"2g" }} €</span>{% endif %}{% endif %}</td>
+<td><a href="{% url 'fattura_dettaglio' p.fattura.pk %}">{{ p.fattura.numero_documento }}</a> del {{ p.fattura.data|date:"d/m/Y" }}</td>
+<td>{{ p.fattura.cliente }}</td><td class="num">{{ p.totale|floatformat:"2g" }}</td><td class="num">{{ p.incassato|floatformat:"2g" }}</td><td class="num"><strong>{{ p.residuo|floatformat:"2g" }}</strong></td>
+<td><a class="pulsante secondario" href="{% url 'incasso_nuovo' p.fattura.pk %}?torna=scadenziario">Registra incasso</a></td></tr>
+{% endwith %}{% empty %}<tr><td colspan="7">Nessuna fattura da incassare.</td></tr>{% endfor %}
+</table></div></div>
+<div class="carta"><h2>Imposte in arrivo (stima)</h2>
+{% if fiscali %}<ul>{% for s in fiscali %}<li>{{ s.data|date:"d/m/Y" }}: {{ s.descrizione }}, {{ s.importo|floatformat:"2g" }} €</li>{% endfor %}</ul>
+<p class="aiuto">Calcolate dagli incassi e dai versamenti registrati: vedi il <a href="{% url 'cruscotto' %}">cruscotto</a> per il dettaglio. I contributi INPS hanno scadenze proprie, indicate dall'INPS.</p>
+{% else %}<p class="aiuto">Nessun pagamento d'imposta previsto in base ai dati registrati.</p>{% endif %}
+</div>
+{% endblock %}

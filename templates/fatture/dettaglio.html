@@ -51,12 +51,14 @@
 {% if fattura.stato == "importata" %}
 <div class="carta aiuto">Fattura emessa e inviata allo SdI con un altro programma, importata qui in sola lettura. L'XML scaricabile è il file originale.</div>
 {% endif %}
-{% if incassi %}
-<div class="carta scorri"><h2>Incassi</h2>
-<table>
-<tr><th>Data</th><th class="num">Importo</th><th>Note</th></tr>
-{% for i in incassi %}<tr><td>{{ i.data|date:"d/m/Y" }}</td><td class="num">{{ i.importo }} €</td><td>{{ i.note }}</td></tr>{% endfor %}
-</table></div>
+{% if not fattura.modificabile and fattura.stato != "scartata" %}
+<div class="carta scorri"><div class="azioni"><h2 class="espandi">Incassi</h2><a class="pulsante secondario" href="{% url 'incasso_nuovo' fattura.pk %}">Registra incasso</a></div>
+{% if incassi %}<table>
+<tr><th>Data</th><th class="num">Importo</th><th>Note</th><th></th></tr>
+{% for i in incassi %}<tr><td>{{ i.data|date:"d/m/Y" }}</td><td class="num">{{ i.importo }} €</td><td>{{ i.note }}</td>
+<td><form class="in-linea" method="post" action="{% url 'incasso_elimina' i.pk %}" data-conferma="Eliminare questo incasso?">{% csrf_token %}<button class="elimina-riga" type="submit" aria-label="Elimina">✕</button></form></td></tr>{% endfor %}
+</table>{% else %}<p class="aiuto">Nessun incasso registrato.</p>{% endif %}
+</div>
 {% endif %}
 {% if fattura.stato == "non_recapitata" %}
 <div class="carta avviso">Lo SdI non è riuscito a recapitare la fattura al cliente: è comunque emessa ed è disponibile nella sua area riservata. Ti conviene avvisare il cliente e mandargliene una copia.</div>

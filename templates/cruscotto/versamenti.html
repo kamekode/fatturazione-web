@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block titolo %}Versamenti{% endblock %}
+{% block contenuto %}
+<div class="carta"><h1>Versamenti di imposte e contributi</h1>
+<p class="aiuto">Registra qui gli F24 pagati. I contributi si deducono dal reddito nell'anno in cui li paghi; gli acconti d'imposta si scalano dall'imposta dell'anno a cui si riferiscono.</p>
+<form method="post">{% csrf_token %}{% include "campi.html" %}<button class="pulsante" type="submit">Registra</button></form></div>
+<div class="carta scorri"><table>
+<tr><th>Data</th><th>Tipo</th><th>Anno rif.</th><th class="num">Importo</th><th>Note</th><th></th></tr>
+{% for v in versamenti %}<tr><td>{{ v.data|date:"d/m/Y" }}</td><td>{{ v.get_tipo_display }}</td><td>{{ v.anno_riferimento }}</td><td class="num">{{ v.importo }} €</td><td>{{ v.note }}</td>
+<td><form class="in-linea" method="post" action="{% url 'versamento_elimina' v.pk %}" data-conferma="Eliminare questo versamento?">{% csrf_token %}<button class="elimina-riga" type="submit" aria-label="Elimina">✕</button></form></td></tr>
+{% empty %}<tr><td colspan="6">Nessun versamento registrato.</td></tr>{% endfor %}
+</table></div>
+{% endblock %}

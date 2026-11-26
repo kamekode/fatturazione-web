@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block titolo %}Cruscotto {{ anno }}{% endblock %}
+{% block contenuto %}
+<div class="carta">
+<div class="azioni"><h1 class="espandi">Cruscotto {{ anno }}</h1>
+<form method="get" class="azioni"><label for="scelta-anno">Anno</label>
+<select name="anno" id="scelta-anno">{% for a in anni %}<option value="{{ a }}"{% if a == anno %} selected{% endif %}>{{ a }}</option>{% endfor %}</select>
+<button class="pulsante secondario" type="submit">Mostra</button></form></div>
+</div>
+<div class="griglia">
+  <div class="carta"><div class="aiuto">Fatturato {{ anno }}</div><div class="grande">{{ fatturato|floatformat:"2g" }} €</div><div class="aiuto">{{ numero_fatture }} fatture, per data della fattura</div></div>
+  <div class="carta"><div class="aiuto">Incassato {{ anno }}</div><div class="grande">{{ incassato|floatformat:"2g" }} €</div><div class="aiuto">per data dell'incasso: è la base delle tasse</div></div>
+  <div class="carta"><div class="aiuto">Da incassare (tutti gli anni)</div><div class="grande">{{ da_incassare|floatformat:"2g" }} €</div><div class="aiuto"><a href="{% url 'scadenziario' %}">apri lo scadenziario</a></div></div>
+  <div class="carta"><div class="aiuto">Scaduto</div><div class="grande{% if scaduto %} errore{% endif %}">{{ scaduto|floatformat:"2g" }} €</div><div class="aiuto"><a href="{% url 'scadenziario' %}?filtro=scadute">fatture scadute</a></div></div>
+</div>
+
+<div class="carta scorri"><h2>Mese per mese</h2>
+<svg class="grafico" viewBox="0 0 610 {{ grafico.y_testo|add:10 }}" role="img" aria-label="Fatturato e incassato per mese">
+{% for b in grafico.barre %}
+  <rect class="barra-fatturato" x="{{ b.x_f }}" y="{{ b.y_f }}" width="16" height="{{ b.h_f }}"><title>{{ b.nome }}: fatturato {{ b.fatturato|floatformat:"2g" }} €</title></rect>
+  <rect class="barra-incassato" x="{{ b.x_i }}" y="{{ b.y_i }}" width="16" height="{{ b.h_i }}"><title>{{ b.nome }}: incassato {{ b.incassato|floatformat:"2g" }} €</title></rect>
+  <text x="{{ b.x_testo }}" y="{{ grafico.y_testo }}" text-anchor="middle" class="etichetta-grafico">{{ b.nome }}</text>
+{% endfor %}
+</svg>
+<p class="aiuto"><span class="legenda fatturato"></span> Fatturato <span class="legenda incassato"></span> Incassato</p>
+<table>
+<tr><th>Mese</th>{% for m in mesi %}<th class="num">{{ m.nome }}</th>{% endfor %}</tr>
+<tr><td>Fatturato</td>{% for m in mesi %}<td class="num">{{ m.fatturato|floatformat:"0g" }}</td>{% endfor %}</tr>
+<tr><td>Incassato</td>{% for m in mesi %}<td class="num">{{ m.incassato|floatformat:"0g" }}</td>{% endfor %}</tr>
+</table>
+</div>
+
+<div class="carta"><h2>Tasse e contributi {{ anno }}: stima ({{ stima.regime|lower }})</h2>
+{% if not profilo %}<p class="avviso-testo">Controlla prima il <a href="{% url 'profilo_fiscale' %}">profilo fiscale</a>: per ora la stima usa i valori predefiniti (coefficiente 67%, imposta 15%).</p>{% endif %}
+{% for a in stima.avvisi %}<p class="aiuto">⚠ {{ a }}</p>{% endfor %}
+{% if stima.disponibile %}
+<div class="scorri"><table>
+{% for v in stima.voci %}<tr{% if v.evidenza %} class="evidenza"{% endif %}><td>{{ v.nome }}</td><td class="num">{{ v.importo|floatformat:"2g" }} €</td><td class="aiuto">{{ v.spiegazione }}</td></tr>{% endfor %}
+</table></div>
+<p><strong>Da mettere da parte ora:</strong> {{ stima.da_accantonare|floatformat:"2g" }} € <span class="aiuto">(saldo d'imposta più contributi stimati non ancora versati)</span></p>
+{% if stima.percentuale_accantonamento %}<p class="aiuto">Regola pratica: su ogni incasso accantona circa il {{ stima.percentuale_accantonamento }}% (coefficiente × (aliquota imposta + aliquota contributi)). È approssimata: non tiene conto dei contributi fissi né della deduzione dei contributi.</p>{% endif %}
+{% if stima.scadenze %}<h3>Prossimi pagamenti legati a questo anno</h3>
+<ul>{% for s in stima.scadenze %}<li>{{ s.data|date:"d/m/Y" }}: {{ s.descrizione }}, {{ s.importo|floatformat:"2g" }} €</li>{% endfor %}</ul>
+<p class="aiuto">Acconti col metodo storico: 100% dell'imposta dell'anno, non dovuti fino a 51,65 €, in unica rata a novembre sotto 257,52 €, altrimenti 50% a giugno e 50% a novembre. Se prevedi di incassare meno puoi versare acconti più bassi.</p>{% endif %}
+{% endif %}
+<div class="azioni"><a class="pulsante secondario" href="{% url 'profilo_fiscale' %}">Profilo fiscale</a><a class="pulsante secondario" href="{% url 'versamenti' %}">Versamenti F24</a></div>
+<p class="aiuto">È una stima per pianificare, non sostituisce la dichiarazione dei redditi. Fonti: Agenzia delle Entrate, scheda "Regime forfetario", istruzioni Redditi PF (quadro LM) e risoluzione 93/E del 2019.</p>
+</div>
+
+{% if clienti %}
+<div class="carta scorri"><h2>Clienti principali {{ anno }}</h2>
+<table>{% for c, totale in clienti %}<tr><td><a href="{% url 'cliente_modifica' c.pk %}">{{ c }}</a></td><td class="num">{{ totale|floatformat:"2g" }} €</td><td class="num aiuto">{% widthratio totale fatturato 100 %}%</td></tr>{% endfor %}</table>
+</div>
+{% endif %}
+{% endblock %}
