@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block titolo %}DDT{% endblock %}
+{% block contenuto %}
+<div class="carta">
+<div class="azioni"><h1 class="espandi">Documenti di trasporto</h1>
+{% if da_fatturare %}<a class="pulsante secondario" href="{% url 'fattura_differita' %}">Fattura i DDT</a>{% endif %}
+<a class="pulsante" href="{% url 'ddt_nuovo' %}">Nuovo DDT</a></div>
+<div class="scorri"><table>
+<tr><th>Numero</th><th>Data</th><th>Cliente</th><th>Causale</th><th>Stato</th><th>Fattura</th></tr>
+{% for d in elenco %}<tr><td><a href="{% url 'ddt_dettaglio' d.pk %}">{{ d.numero_documento }}</a></td><td>{{ d.data|date:"d/m/Y" }}</td><td>{{ d.cliente }}</td><td>{{ d.causale_trasporto }}</td>
+<td><span class="etichetta {% if d.stato == 'confermato' %}emessa{% endif %}">{{ d.get_stato_display }}</span></td>
+<td>{% if d.fattura %}<a href="{% url 'fattura_dettaglio' d.fattura.pk %}">{{ d.fattura.numero_documento }}</a>{% elif not d.da_fatturare %}<span class="aiuto">non da fatturare</span>{% elif d.stato == 'confermato' %}<span class="aiuto">da fatturare</span>{% endif %}</td></tr>
+{% empty %}<tr><td colspan="6">Nessun DDT.</td></tr>{% endfor %}
+</table></div></div>
+{% endblock %}

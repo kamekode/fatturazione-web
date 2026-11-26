@@ -114,7 +114,7 @@ def nome_file(azienda, progressivo):
 
 def genera_xml(fattura, azienda, progressivo, versione=None) -> bytes:
     versione = versione or versione_schema()
-    righe = list(fattura.righe.all())
+    righe = list(fattura.righe.select_related("articolo", "ddt"))
     if not righe:
         raise ErroreFattura("La fattura non ha righe.")
     cliente = fattura.cliente
@@ -184,6 +184,18 @@ def genera_xml(fattura, azienda, progressivo, versione=None) -> bytes:
     for testo in (fattura.causale.strip(), azienda.testo_piede.strip()):
         for i in range(0, len(testo), LUNGHEZZA_CAUSALE):
             _sub(generali, "Causale", testo[i : i + LUNGHEZZA_CAUSALE])
+
+    # Fattura differita: riferimenti ai DDT con le linee che vi corrispondono.
+    per_ddt = {}
+    for numero, riga in enumerate(righe, start=1):
+        if riga.ddt_id:
+            per_ddt.setdefault(riga.ddt_id, (riga.ddt, []))[1].append(numero)
+    for ddt, linee in sorted(per_ddt.values(), key=lambda v: (v[0].data, v[0].anno, v[0].numero)):
+        dati_ddt = _sub(generali.getparent(), "DatiDDT")
+        _sub(dati_ddt, "NumeroDDT", ddt.numero_documento)
+        _sub(dati_ddt, "DataDDT", ddt.data.isoformat())
+        for numero in linee:
+            _sub(dati_ddt, "RiferimentoNumeroLinea", numero)
 
     beni = _sub(body, "DatiBeniServizi")
     for numero, riga in enumerate(righe, start=1):

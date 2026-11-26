@@ -47,3 +47,18 @@ label.spunta{display:flex;gap:8px;align-items:center;font-size:15px;color:var(--
 .etichetta.inviata{border-color:var(--primario);color:var(--primario)}
 .etichetta.consegnata,.etichetta.importata{border-color:var(--ok);color:var(--ok)}
 .etichetta.scartata,.etichetta.non_recapitata{border-color:var(--errore);color:var(--errore)}
+/* DDT stampabile */
+.foglio{max-width:900px;margin:0 auto;padding:24px 16px}
+.due-colonne,.tre-colonne{display:grid;gap:12px;margin:12px 0}
+.due-colonne{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.tre-colonne{grid-template-columns:repeat(3,1fr)}
+.riquadro{border:1px solid var(--bordo);border-radius:6px;padding:8px 10px;margin:8px 0}
+table.bordata{width:100%;border-collapse:collapse;margin:8px 0}
+table.bordata th,table.bordata td{border:1px solid var(--bordo);padding:4px 6px;text-align:left}
+table.bordata .num{text-align:right}
+.firme div{border-top:1px solid var(--testo);padding-top:4px;margin-top:56px;font-size:13px}
+@media print{
+  .solo-schermo{display:none}
+  .foglio{background:#fff;color:#000;padding:0;max-width:none}
+  .foglio .riquadro,.foglio table.bordata th,.foglio table.bordata td{border-color:#000}
+}

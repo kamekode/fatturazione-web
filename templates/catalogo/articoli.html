@@ -4,8 +4,8 @@
 <div class="carta">
 <div class="azioni"><h1 class="espandi">Articoli e servizi</h1><a class="pulsante" href="{% url 'articolo_nuovo' %}">Nuovo articolo</a></div>
 <div class="scorri"><table>
-<tr><th>Codice</th><th>Descrizione</th><th>Tipo</th><th class="num">Prezzo</th><th>IVA / Natura</th></tr>
-{% for a in articoli %}<tr><td><a href="{% url 'articolo_modifica' a.pk %}">{{ a.codice }}</a></td><td>{{ a.descrizione|truncatechars:80 }}</td><td>{{ a.get_tipo_display }}</td><td class="num">{{ a.prezzo|floatformat:2 }}</td><td>{% if a.natura %}{{ a.natura }}{% else %}{{ a.aliquota_iva|floatformat:0 }}%{% endif %}</td></tr>
-{% empty %}<tr><td colspan="5">Nessun articolo.</td></tr>{% endfor %}
+<tr><th>Codice</th><th>Descrizione</th><th>Tipo</th><th class="num">Prezzo</th><th>IVA / Natura</th><th>Magazzino</th></tr>
+{% for a in articoli %}<tr><td><a href="{% url 'articolo_modifica' a.pk %}">{{ a.codice }}</a></td><td>{{ a.descrizione|truncatechars:80 }}</td><td>{{ a.get_tipo_display }}</td><td class="num">{{ a.prezzo|floatformat:2 }}</td><td>{% if a.natura %}{{ a.natura }}{% else %}{{ a.aliquota_iva|floatformat:0 }}%{% endif %}</td><td>{% if a.gestito_a_magazzino %}<a href="{% url 'movimenti' a.pk %}">movimenti</a>{% endif %}</td></tr>
+{% empty %}<tr><td colspan="6">Nessun articolo.</td></tr>{% endfor %}
 </table></div></div>
 {% endblock %}

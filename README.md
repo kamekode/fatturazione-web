@@ -10,7 +10,7 @@ cruscotto con previsione delle tasse.
 |---|---|---|
 | 1 | Base, accesso protetto, anagrafiche, articoli, termini di pagamento e rate, XML FatturaPA validato | ✅ |
 | 2 | Invio e ricezione SdI via PEC (poi SDICoop) | ✅ PEC |
-| 3 | Magazzino, DDT, fattura differita, migrazione dati | 🟡 importazione da Flextax |
+| 3 | Magazzino, DDT, fattura differita, migrazione dati | ✅ |
 | 4 | Scadenziario e cruscotto con previsione tasse | da fare |
 
 ## Cosa fa oggi
@@ -47,6 +47,22 @@ Una fattura emessa non si può più modificare né eliminare.
   - mancata consegna (MC) → *Non recapitata*: la fattura è emessa e disponibile al cliente nella sua area riservata;
   - fatture dei fornitori (anche firmate `.p7m`) → sezione **Ricevute**, con anteprima e file originale conservato.
 - Il controllo si può pianificare: `python manage.py controlla_pec` (ad esempio con l'Utilità di pianificazione di Windows).
+
+### Magazzino e DDT
+
+- **Magazzino**: negli articoli di tipo bene si attiva "gestito a magazzino" (con scorta minima facoltativa).
+  Carichi, scarichi e rettifiche d'inventario si registrano a mano; la rettifica chiede la giacenza contata
+  e registra la differenza. Elenco giacenze con segnalazione di articoli sotto scorta o in negativo.
+- **DDT**: numerazione progressiva per anno, separata dalle fatture; causale del trasporto con suggerimenti
+  (vendita, reso merce riparata, conto riparazione...), trasporto a cura di mittente/destinatario/vettore,
+  aspetto dei beni, colli, peso, destinazione. Stampa (anche in PDF dal browser) senza prezzi, con gli spazi per le firme.
+  La conferma scarica dal magazzino; riportando in bozza gli scarichi vengono annullati.
+- **Fattura differita (TD24)**: si scelgono i DDT confermati di un cliente e si ottiene una fattura in bozza con tutte
+  le righe e, nell'XML, un blocco `DatiDDT` per ogni DDT (numero, data, linee collegate). Avviso se si supera il
+  giorno 15 del mese successivo al DDT (art. 21, comma 4, DPR 633/1972, richiamato nella descrizione di TD24
+  dello schema ufficiale). Eliminando la bozza i DDT tornano da fatturare.
+- Una fattura emessa senza DDT scarica gli articoli a magazzino (una nota di credito li ricarica); se lo SdI
+  la scarta e torna in bozza, lo scarico viene annullato. Le fatture importate non muovono il magazzino.
 
 ### Importazione da Flextax
 

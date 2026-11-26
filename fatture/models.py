@@ -95,6 +95,10 @@ class RigaFattura(models.Model):
     prezzo_unitario = models.DecimalField(max_digits=19, decimal_places=6)
     aliquota_iva = models.DecimalField("IVA %", max_digits=5, decimal_places=2, default=Decimal("0"))
     natura = models.CharField(max_length=4, choices=Natura.choices, blank=True)
+    ddt = models.ForeignKey(
+        "magazzino.DDT", on_delete=models.SET_NULL, null=True, blank=True, related_name="righe_fattura",
+        help_text="DDT da cui proviene la riga (fattura differita).",
+    )
     ordine = models.PositiveIntegerField(default=0)
 
     class Meta:
