@@ -2,7 +2,7 @@
 {% block titolo %}Fatture{% endblock %}
 {% block contenuto %}
 <div class="carta">
-<div class="azioni"><h1 class="espandi">Fatture</h1><a class="pulsante" href="{% url 'fattura_nuova' %}">Nuova fattura</a></div>
+<div class="azioni"><h1 class="espandi">Fatture</h1><a class="pulsante secondario" href="{% url 'importa_flextax' %}">Importa da Flextax</a><a class="pulsante" href="{% url 'fattura_nuova' %}">Nuova fattura</a></div>
 <div class="scorri"><table>
 <tr><th>Numero</th><th>Data</th><th>Tipo</th><th>Cliente</th><th class="num">Totale</th><th>Stato</th></tr>
 {% for f, t in righe %}<tr><td><a href="{% url 'fattura_dettaglio' f.pk %}">{{ f.numero_documento }}</a></td><td>{{ f.data|date:"d/m/Y" }}</td><td>{{ f.tipo_documento }}</td><td>{{ f.cliente }}</td><td class="num">{{ t.totale_documento }} €</td><td><span class="etichetta {{ f.stato }}">{{ f.get_stato_display }}</span></td></tr>

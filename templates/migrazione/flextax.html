@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block titolo %}Importa da Flextax{% endblock %}
+{% block contenuto %}
+<div class="carta"><h1>Importa da Flextax</h1>
+<p class="aiuto">Carica l'export di Flextax: le fatture vengono ricostruite dagli XML ufficiali (cliente, righe, pagamento) e restano in sola lettura con lo stato "Importata".
+I clienti mancanti vengono creati, e se i dati azienda sono vuoti vengono presi dalle fatture.
+Le righe automatiche di Flextax per il bollo e per i riferimenti normativi non diventano righe: il bollo diventa la casella "a carico del cliente" e il testo normativo va nel "testo a piè di fattura" dei dati azienda, se è vuoto.
+Puoi ripetere l'importazione senza problemi: le fatture già presenti vengono saltate.</p>
+<form method="post" enctype="multipart/form-data">{% csrf_token %}{% include "campi.html" %}
+<div class="azioni"><button class="pulsante" type="submit">Importa</button></div></form>
+</div>
+{% if errore %}<div class="carta avviso"><span class="errore">{{ errore }}</span></div>{% endif %}
+{% if resoconto %}
+<div class="carta"><h2>Risultato</h2>
+<ul>
+  <li>Fatture importate: {{ resoconto.importate|length }}{% if resoconto.errori %}, con errori: {{ resoconto.errori|length }}{% endif %}{% if resoconto.file_ignorati %} ({{ resoconto.file_ignorati }} file non XML ignorati, ad esempio i PDF){% endif %}</li>
+  {% if resoconto.azienda_creata %}<li>Dati azienda creati dalle fatture: <a href="{% url 'azienda' %}">controllali</a> (telefono, email e PEC vanno aggiunti a mano).</li>{% endif %}
+  {% if resoconto.testo_piede_impostato %}<li>Il testo dei riferimenti normativi è stato copiato nel <a href="{% url 'azienda' %}">testo a piè di fattura</a>.</li>{% endif %}
+  {% if resoconto.clienti_creati %}<li>Clienti creati: {% for c in resoconto.clienti_creati %}<a href="{% url 'cliente_modifica' c.pk %}">{{ c }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}</li>{% endif %}
+  {% if resoconto.incassi_creati %}<li>Incassi importati dal CSV: {{ resoconto.incassi_creati }}</li>{% endif %}
+  {% if prossimo_numero %}<li>La prossima fattura avrà il numero {{ prossimo_numero }}.</li>{% endif %}
+</ul>
+{% for a in resoconto.avvisi_csv %}<p class="aiuto">{{ a }}</p>{% endfor %}
+{% if resoconto.esiti %}
+<div class="scorri"><table>
+<tr><th>File</th><th>Fattura</th><th>Cliente</th><th>Esito</th></tr>
+{% for e in resoconto.esiti %}<tr>
+  <td>{{ e.file }}</td>
+  <td>{% if e.fattura %}<a href="{% url 'fattura_dettaglio' e.fattura.pk %}">{{ e.fattura.numero_documento }}</a> del {{ e.fattura.data|date:"d/m/Y" }}{% endif %}</td>
+  <td>{% if e.fattura %}{{ e.fattura.cliente }}{% endif %}</td>
+  <td>{% if e.stato == "importata" %}Importata{% elif e.stato == "presente" %}Già presente{% else %}<span class="errore">Non importata: {{ e.messaggio }}</span>{% endif %}
+  {% for a in e.avvisi %}<br><span class="aiuto">{{ a }}</span>{% endfor %}</td>
+</tr>{% endfor %}
+</table></div>
+{% endif %}
+</div>
+{% endif %}
+{% endblock %}

@@ -19,6 +19,7 @@ class Fattura(models.Model):
         CONSEGNATA = "consegnata", "Consegnata"
         NON_RECAPITATA = "non_recapitata", "Non recapitata (disponibile nel cassetto fiscale)"
         SCARTATA = "scartata", "Scartata dallo SdI"
+        IMPORTATA = "importata", "Importata (inviata con un altro programma)"
 
     cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT, related_name="fatture")
     tipo_documento = models.CharField(max_length=4, choices=TipoDocumento.choices, default=TipoDocumento.FATTURA)
@@ -127,6 +128,22 @@ class Rata(models.Model):
 
     def __str__(self):
         return f"Rata del {self.data_scadenza:%d/%m/%Y}"
+
+
+class Incasso(models.Model):
+    """Pagamento ricevuto (anche parziale) per una fattura."""
+
+    fattura = models.ForeignKey(Fattura, on_delete=models.CASCADE, related_name="incassi")
+    data = models.DateField()
+    importo = models.DecimalField(max_digits=15, decimal_places=2, validators=[MinValueValidator(Decimal("0.01"))])
+    note = models.CharField(max_length=200, blank=True)
+
+    class Meta:
+        ordering = ["data", "id"]
+        verbose_name_plural = "incassi"
+
+    def __str__(self):
+        return f"{self.importo} € del {self.data:%d/%m/%Y}"
 
 
 class Contatore(models.Model):

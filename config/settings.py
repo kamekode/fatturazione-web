@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "catalogo",
     "fatture",
     "sdi",
+    "migrazione",
 ]
 
 MIDDLEWARE = [

@@ -41,9 +41,22 @@
   {% endif %}
   <a class="pulsante secondario" href="{% url 'fattura_xml' fattura.pk %}">Scarica XML</a>
   <a class="pulsante secondario" href="{% url 'fattura_anteprima' fattura.pk %}" target="_blank" rel="noopener">Anteprima</a>
+  {% if fattura.stato == "importata" %}
+  <form class="in-linea" method="post" action="{% url 'fattura_elimina' fattura.pk %}" data-conferma="Togliere questa fattura dal programma? Il documento resta valido presso lo SdI: potrai reimportarlo.">{% csrf_token %}<button class="pulsante pericolo" type="submit">Elimina importazione</button></form>
+  {% endif %}
   <span class="aiuto">Progressivo di invio {{ fattura.progressivo_invio }}{% if fattura.inviata_il %} · inviata il {{ fattura.inviata_il|date:"d/m/Y H:i" }}{% endif %}{% if fattura.identificativo_sdi %} · ID SdI {{ fattura.identificativo_sdi }}{% endif %}</span>
 {% endif %}
 </div>
+{% if fattura.stato == "importata" %}
+<div class="carta aiuto">Fattura emessa e inviata allo SdI con un altro programma, importata qui in sola lettura. L'XML scaricabile è il file originale.</div>
+{% endif %}
+{% if incassi %}
+<div class="carta scorri"><h2>Incassi</h2>
+<table>
+<tr><th>Data</th><th class="num">Importo</th><th>Note</th></tr>
+{% for i in incassi %}<tr><td>{{ i.data|date:"d/m/Y" }}</td><td class="num">{{ i.importo }} €</td><td>{{ i.note }}</td></tr>{% endfor %}
+</table></div>
+{% endif %}
 {% if fattura.stato == "non_recapitata" %}
 <div class="carta avviso">Lo SdI non è riuscito a recapitare la fattura al cliente: è comunque emessa ed è disponibile nella sua area riservata. Ti conviene avvisare il cliente e mandargliene una copia.</div>
 {% endif %}

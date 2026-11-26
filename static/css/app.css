@@ -45,5 +45,5 @@ label.spunta{display:flex;gap:8px;align-items:center;font-size:15px;color:var(--
 .errore{color:var(--errore)}
 .carta.avviso{border-color:var(--avviso)}
 .etichetta.inviata{border-color:var(--primario);color:var(--primario)}
-.etichetta.consegnata{border-color:var(--ok);color:var(--ok)}
+.etichetta.consegnata,.etichetta.importata{border-color:var(--ok);color:var(--ok)}
 .etichetta.scartata,.etichetta.non_recapitata{border-color:var(--errore);color:var(--errore)}
