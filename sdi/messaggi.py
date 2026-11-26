@@ -71,7 +71,8 @@ def leggi_notifica(nome_file: str, contenuto: bytes) -> Notifica:
 
 def estrai_da_p7m(contenuto: bytes) -> bytes:
     """Estrae l'XML da un file firmato CAdES (.p7m), anche se codificato in base64."""
-    dati = contenuto.strip()
+    # Il DER binario non va ripulito dagli spazi: la firma può terminare con byte come 0x20 o 0x0A.
+    dati = contenuto
     if not dati.startswith(b"\x30"):
         dati = base64.b64decode(re.sub(rb"-----[^-]+-----|\s", b"", dati))
     firmato = cms.ContentInfo.load(dati)["content"]
