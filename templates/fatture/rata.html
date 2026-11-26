@@ -1,0 +1,2 @@
+<tr class="rata">{% for hidden in f.hidden_fields %}{{ hidden }}{% endfor %}
+<td class="numero-rata"></td><td>{{ f.data_scadenza }}{{ f.data_scadenza.errors }}{{ f.non_field_errors }}</td><td>{{ f.importo }}{{ f.importo.errors }}</td><td><span hidden>{{ f.DELETE }}</span><button type="button" class="elimina-riga" title="Elimina" aria-label="Elimina">✕</button></td></tr>

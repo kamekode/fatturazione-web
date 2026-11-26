@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block titolo %}Fattura {{ fattura.numero_documento }}{% endblock %}
+{% block contenuto %}
+<div class="carta">
+<div class="azioni"><h1 class="espandi">{{ fattura }}</h1><span class="etichetta {{ fattura.stato }}">{{ fattura.get_stato_display }}</span></div>
+<p><strong>Cliente:</strong> <a href="{% url 'cliente_modifica' fattura.cliente.pk %}">{{ fattura.cliente }}</a> · codice destinatario {{ fattura.cliente.codice_destinatario }}{% if fattura.cliente.pec %} · PEC {{ fattura.cliente.pec }}{% endif %}</p>
+{% if fattura.causale %}<p><strong>Causale:</strong> {{ fattura.causale }}</p>{% endif %}
+<p><strong>Pagamento:</strong> {{ fattura.get_modalita_pagamento_display }} · {{ fattura.get_condizioni_pagamento_display }}{% if not rate %} · {{ fattura.get_termini_pagamento_display }}{% if fattura.data_scadenza %}, scadenza {{ fattura.data_scadenza|date:"d/m/Y" }}{% endif %}{% endif %}</p>
+</div>
+<div class="carta scorri"><table>
+<tr><th>Descrizione</th><th class="num">Q.tà</th><th class="num">Prezzo</th><th>IVA / Natura</th></tr>
+{% for r in righe %}<tr><td>{{ r.descrizione }}</td><td class="num">{{ r.quantita|floatformat:"-4" }} {{ r.unita_misura }}</td><td class="num">{{ r.prezzo_unitario|floatformat:"-6" }}</td><td>{% if r.natura %}{{ r.natura }}{% else %}{{ r.aliquota_iva|floatformat:0 }}%{% endif %}</td></tr>{% endfor %}
+</table>
+<table class="totali">
+<tr><td class="num">Imponibile</td><td class="num">{{ totali.imponibile }} €</td></tr>
+<tr><td class="num">IVA</td><td class="num">{{ totali.imposta }} €</td></tr>
+<tr><td class="num"><strong>Totale documento</strong></td><td class="num"><strong>{{ totali.totale_documento }} €</strong></td></tr>
+{% if totali.bollo_virtuale %}<tr><td class="num">{% if totali.bollo_addebitato %}di cui imposta di bollo a carico del cliente{% else %}Imposta di bollo virtuale (a tuo carico, non nel totale){% endif %}</td><td class="num">{{ totali.bollo }} €</td></tr>{% endif %}
+</table></div>
+{% if rate %}
+<div class="carta scorri"><h2>Rate</h2>
+{% if errore_rate %}<ul class="errorlist"><li>{{ errore_rate }} Correggi gli importi prima di emettere.</li></ul>{% endif %}
+<table>
+<tr><th>Rata</th><th>Scadenza</th><th class="num">Importo</th></tr>
+{% for r, importo in rate %}<tr><td>{{ forloop.counter }}</td><td>{{ r.data_scadenza|date:"d/m/Y" }}</td><td class="num">{% if importo %}{{ importo }} €{% else %}-{% endif %}</td></tr>{% endfor %}
+</table></div>
+{% endif %}
+{% if azienda.testo_piede %}<div class="carta aiuto testo-piede">{{ azienda.testo_piede|linebreaksbr }}</div>{% endif %}
+<div class="azioni">
+{% if fattura.modificabile %}
+  <a class="pulsante secondario" href="{% url 'fattura_modifica' fattura.pk %}">Modifica</a>
+  <a class="pulsante secondario" href="{% url 'fattura_anteprima' fattura.pk %}" target="_blank" rel="noopener">Anteprima</a>
+  <form class="in-linea" method="post" action="{% url 'fattura_emetti' fattura.pk %}">{% csrf_token %}<button class="pulsante" type="submit">Genera XML ed emetti</button></form>
+  <form class="in-linea" method="post" action="{% url 'fattura_elimina' fattura.pk %}" data-conferma="Eliminare definitivamente questa bozza?">{% csrf_token %}<button class="pulsante pericolo" type="submit">Elimina bozza</button></form>
+{% else %}
+  <a class="pulsante" href="{% url 'fattura_xml' fattura.pk %}">Scarica XML</a>
+  <a class="pulsante secondario" href="{% url 'fattura_anteprima' fattura.pk %}" target="_blank" rel="noopener">Anteprima</a>
+  <span class="aiuto">Progressivo di invio {{ fattura.progressivo_invio }}. L'invio allo SdI arriva nel passo 2.</span>
+{% endif %}
+</div>
+{% endblock %}

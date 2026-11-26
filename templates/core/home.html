@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block titolo %}Home{% endblock %}
+{% block contenuto %}
+{% if not azienda %}
+<div class="carta"><strong>Primo passo:</strong> <a href="{% url 'azienda' %}">compila i dati della tua azienda</a> per poter emettere fatture.</div>
+{% endif %}
+<div class="griglia">
+  <div class="carta"><div class="aiuto">Clienti</div><div class="grande">{{ num_clienti }}</div></div>
+  <div class="carta"><div class="aiuto">Fatture</div><div class="grande">{{ num_fatture }}</div></div>
+</div>
+<div class="carta">
+  <div class="azioni"><h2 class="espandi">Ultime fatture</h2><a class="pulsante" href="{% url 'fattura_nuova' %}">Nuova fattura</a></div>
+  <div class="scorri"><table>
+  {% for f in ultime_fatture %}<tr><td><a href="{% url 'fattura_dettaglio' f.pk %}">{{ f.numero_documento }}</a></td><td>{{ f.data|date:"d/m/Y" }}</td><td>{{ f.cliente }}</td><td>{{ f.get_stato_display }}</td></tr>
+  {% empty %}<tr><td>Nessuna fattura.</td></tr>{% endfor %}
+  </table></div>
+</div>
+{% endblock %}

@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block titolo %}Dati azienda{% endblock %}
+{% block contenuto %}
+<div class="carta"><h1>Dati azienda</h1>
+<p class="aiuto">Questi dati compaiono come cedente/prestatore in ogni fattura.</p>
+<form method="post">{% csrf_token %}{% include "campi.html" %}<button class="pulsante" type="submit">Salva</button></form></div>
+{% endblock %}

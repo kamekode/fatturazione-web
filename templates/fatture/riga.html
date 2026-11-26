@@ -1,0 +1,2 @@
+<tr>{% for hidden in f.hidden_fields %}{{ hidden }}{% endfor %}
+<td>{{ f.articolo }}{{ f.articolo.errors }}</td><td>{{ f.descrizione }}{{ f.descrizione.errors }}{{ f.non_field_errors }}</td><td>{{ f.quantita }}{{ f.quantita.errors }}</td><td>{{ f.unita_misura }}</td><td>{{ f.prezzo_unitario }}{{ f.prezzo_unitario.errors }}</td><td>{{ f.aliquota_iva }}</td><td>{{ f.natura }}{{ f.natura.errors }}</td><td><span hidden>{{ f.DELETE }}</span><button type="button" class="elimina-riga" title="Elimina" aria-label="Elimina">✕</button></td></tr>

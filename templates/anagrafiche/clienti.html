@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block titolo %}Clienti{% endblock %}
+{% block contenuto %}
+<div class="carta">
+<div class="azioni"><h1 class="espandi">Clienti</h1><a class="pulsante" href="{% url 'cliente_nuovo' %}">Nuovo cliente</a></div>
+<form method="get" class="campo"><input type="search" name="q" value="{{ q }}" placeholder="Cerca per nome, partita IVA o codice fiscale"></form>
+<div class="scorri"><table>
+<tr><th>Cliente</th><th>Partita IVA</th><th>Codice fiscale</th><th>Codice destinatario</th></tr>
+{% for c in clienti %}<tr><td><a href="{% url 'cliente_modifica' c.pk %}">{{ c }}</a></td><td>{{ c.partita_iva }}</td><td>{{ c.codice_fiscale }}</td><td>{{ c.codice_destinatario }}</td></tr>
+{% empty %}<tr><td colspan="4">Nessun cliente.</td></tr>{% endfor %}
+</table></div></div>
+{% endblock %}

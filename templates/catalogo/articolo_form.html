@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block titolo %}Articolo{% endblock %}
+{% block contenuto %}
+<div class="carta"><h1>{% if articolo %}{{ articolo.codice }}{% else %}Nuovo articolo{% endif %}</h1>
+<form method="post">{% csrf_token %}{% include "campi.html" %}
+<div class="azioni"><button class="pulsante" type="submit">Salva</button><a href="{% url 'articoli' %}">Annulla</a></div></form></div>
+{% endblock %}
