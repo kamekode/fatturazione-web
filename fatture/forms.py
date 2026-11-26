@@ -45,7 +45,13 @@ class RigaForm(forms.ModelForm):
     class Meta:
         model = RigaFattura
         fields = ["articolo", "descrizione", "quantita", "unita_misura", "prezzo_unitario", "aliquota_iva", "natura"]
-        widgets = {"descrizione": forms.TextInput()}
+        widgets = {
+            "descrizione": forms.TextInput(),
+            # step "any": le frecce cambiano di 1 ma si possono scrivere anche i decimali.
+            "quantita": forms.NumberInput(attrs={"step": "any", "min": "0"}),
+            "prezzo_unitario": forms.NumberInput(attrs={"step": "any"}),
+            "aliquota_iva": forms.NumberInput(attrs={"step": "any", "min": "0"}),
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -94,7 +100,10 @@ class RataForm(forms.ModelForm):
     class Meta:
         model = Rata
         fields = ["data_scadenza", "importo"]
-        widgets = {"data_scadenza": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d")}
+        widgets = {
+            "data_scadenza": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
+            "importo": forms.NumberInput(attrs={"step": "any", "min": "0"}),
+        }
 
     def has_changed(self):
         if not self.instance.pk and not any(

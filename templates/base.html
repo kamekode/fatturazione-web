@@ -24,5 +24,6 @@
 {% if messages %}<ul class="messaggi">{% for m in messages %}<li class="{{ m.tags }}">{{ m }}</li>{% endfor %}</ul>{% endif %}
 {% block contenuto %}{% endblock %}
 </main>
+<script src="{% static 'js/app.js' %}"></script>
 </body>
 </html>

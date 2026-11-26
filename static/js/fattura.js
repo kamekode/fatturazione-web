@@ -20,6 +20,21 @@
     if (campo) campo.focus();
   });
 
+  // Scegliendo un articolo la riga prende descrizione, prezzo, u.m., aliquota e natura.
+  var articoli = JSON.parse(document.getElementById("dati-articoli").textContent);
+  document.getElementById("righe-corpo").addEventListener("change", function (evento) {
+    var scelta = evento.target;
+    if (!scelta.matches("select[name$='-articolo']")) return;
+    var dati = articoli[scelta.value];
+    if (!dati) return;
+    var riga = scelta.closest("tr");
+    ["descrizione", "unita_misura", "natura"].forEach(function (campo) {
+      riga.querySelector("[name$='-" + campo + "']").value = dati[campo];
+    });
+    riga.querySelector("[name$='-prezzo_unitario']").value = dati.prezzo;
+    riga.querySelector("[name$='-aliquota_iva']").value = dati.aliquota_iva;
+  });
+
   // --- Termini di pagamento -------------------------------------------------
   var condizioni = document.getElementById("id_condizioni_pagamento");
   var termini = document.getElementById("id_termini_pagamento");

@@ -40,5 +40,6 @@
 
 <div class="azioni"><button class="pulsante" type="submit">Salva bozza</button><a href="{% if fattura %}{% url 'fattura_dettaglio' fattura.pk %}{% else %}{% url 'fatture' %}{% endif %}">Annulla</a></div>
 </form>
+{{ articoli|json_script:"dati-articoli" }}
 <script src="{% static 'js/fattura.js' %}"></script>
 {% endblock %}

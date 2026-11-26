@@ -4,6 +4,7 @@ from django.http import HttpResponse, HttpResponseNotAllowed
 from django.shortcuts import get_object_or_404, redirect, render
 
 from anagrafiche.models import Azienda
+from catalogo.models import Articolo
 
 from .calcoli import ErroreRate, calcola_totali, ripartisci_rate, scadenze_rate
 from .codici import CondizioniPagamento
@@ -54,7 +55,18 @@ def modifica(request, pk=None):
                 _salva_rate(fattura, rate_formset, a_rate, bool(rate_inserite))
             messages.success(request, f"Fattura {fattura.numero_documento} salvata come bozza.")
             return redirect("fattura_dettaglio", pk=fattura.pk)
-    contesto = {"form": form, "formset": formset, "rate_formset": rate_formset, "fattura": fattura if pk else None}
+    # Dati degli articoli per compilare la riga appena si sceglie un articolo.
+    articoli = {
+        str(a.pk): {
+            "descrizione": a.descrizione, "prezzo": f"{a.prezzo.normalize():f}", "unita_misura": a.unita_misura,
+            "aliquota_iva": f"{a.aliquota_iva.normalize():f}", "natura": a.natura,
+        }
+        for a in Articolo.objects.filter(attivo=True)
+    }
+    contesto = {
+        "form": form, "formset": formset, "rate_formset": rate_formset, "fattura": fattura if pk else None,
+        "articoli": articoli,
+    }
     return render(request, "fatture/form.html", contesto)
 
 

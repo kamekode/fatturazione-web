@@ -7,7 +7,11 @@ class ArticoloForm(forms.ModelForm):
     class Meta:
         model = Articolo
         fields = ["codice", "descrizione", "tipo", "unita_misura", "prezzo", "aliquota_iva", "natura", "attivo"]
-        widgets = {"descrizione": forms.Textarea(attrs={"rows": 2})}
+        widgets = {
+            "descrizione": forms.Textarea(attrs={"rows": 2}),
+            "prezzo": forms.NumberInput(attrs={"step": "any"}),
+            "aliquota_iva": forms.NumberInput(attrs={"step": "any", "min": "0"}),
+        }
 
     def clean(self):
         dati = super().clean()
