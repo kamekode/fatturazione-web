@@ -25,6 +25,8 @@ cruscotto con previsione delle tasse.
   riepilogo IVA e bollo virtuale (2 € oltre 77,47 € di operazioni senza IVA).
 - **Pagamento**: termini 30/60/90 gg data fattura o fine mese con scadenza calcolata, data specifica,
   oppure pagamento a rate con scadenze generate e modificabili (una riga DettaglioPagamento per rata).
+- **Bollo a carico del cliente** (spunta in fattura, attiva di default): i 2 € diventano una riga "Imposta di bollo"
+  con natura N1 e entrano nel totale. Totale aggiornato in tempo reale durante la compilazione.
 - **Testo a piè di fattura** personalizzabile in Dati azienda, riportato nella Causale dell'XML.
 - **XML FatturaPA (FPR12)** generato e validato sugli schemi ufficiali 1.2.3 e 1.2.4 prima dell'emissione,
   con nome file e progressivo di invio conformi. Anteprima con il foglio di stile ufficiale.

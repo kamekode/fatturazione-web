@@ -12,7 +12,7 @@ import xmlschema
 from django.conf import settings
 from lxml import etree
 
-from .calcoli import ErroreRate, calcola_totali, ripartisci_rate, totale_riga
+from .calcoli import NATURA_BOLLO_ADDEBITATO, ErroreRate, calcola_totali, ripartisci_rate, totale_riga
 
 NS = "http://ivaservizi.agenziaentrate.gov.it/docs/xsd/fatture/v1.2"
 NS_DS = "http://www.w3.org/2000/09/xmldsig#"
@@ -26,6 +26,12 @@ FOGLI_DI_STILE = {
     "1.2.4": "Foglio_di_stile_fattura_ordinaria_ver1.2.4.xsl",
 }
 LUNGHEZZA_CAUSALE = 200
+# Riferimento normativo della riga "Imposta di bollo" addebitata al cliente (natura N1),
+# preso dalla descrizione del codice N1 nello schema ufficiale di ciascuna versione.
+RIFERIMENTO_N1 = {
+    "1.2.3": "Escluse ex art. 15 del D.P.R. 633/1972",
+    "1.2.4": "Escluse ex art. 29 del D.Lgs. 10/2026",
+}
 
 
 class ErroreFattura(Exception):
@@ -106,12 +112,13 @@ def nome_file(azienda, progressivo):
     return f"IT{azienda.codice_fiscale.upper()}_{progressivo}.xml"
 
 
-def genera_xml(fattura, azienda, progressivo) -> bytes:
+def genera_xml(fattura, azienda, progressivo, versione=None) -> bytes:
+    versione = versione or versione_schema()
     righe = list(fattura.righe.all())
     if not righe:
         raise ErroreFattura("La fattura non ha righe.")
     cliente = fattura.cliente
-    totali = calcola_totali(righe)
+    totali = calcola_totali(righe, fattura.bollo_a_carico_cliente)
 
     radice = etree.Element(
         f"{{{NS}}}FatturaElettronica",
@@ -194,13 +201,25 @@ def genera_xml(fattura, azienda, progressivo) -> bytes:
         _sub(linea, "AliquotaIVA", _importo(riga.aliquota_iva))
         _opzionale(linea, "Natura", riga.natura)
 
+    if totali.bollo_addebitato:
+        linea = _sub(beni, "DettaglioLinee")
+        _sub(linea, "NumeroLinea", len(righe) + 1)
+        _sub(linea, "Descrizione", "Imposta di bollo")
+        _sub(linea, "Quantita", "1.00")
+        _sub(linea, "PrezzoUnitario", _importo(totali.bollo))
+        _sub(linea, "PrezzoTotale", _importo(totali.bollo))
+        _sub(linea, "AliquotaIVA", "0.00")
+        _sub(linea, "Natura", NATURA_BOLLO_ADDEBITATO)
+
     for r in totali.riepiloghi:
         riepilogo = _sub(beni, "DatiRiepilogo")
         _sub(riepilogo, "AliquotaIVA", _importo(r.aliquota_iva))
         _opzionale(riepilogo, "Natura", r.natura)
         _sub(riepilogo, "ImponibileImporto", _importo(r.imponibile))
         _sub(riepilogo, "Imposta", _importo(r.imposta))
-        if r.natura:
+        if r.natura == NATURA_BOLLO_ADDEBITATO and totali.bollo_addebitato:
+            _sub(riepilogo, "RiferimentoNormativo", RIFERIMENTO_N1[versione])
+        elif r.natura:
             _sub(riepilogo, "RiferimentoNormativo", azienda.riferimento_normativo[:100])
         else:
             _sub(riepilogo, "EsigibilitaIVA", "I")

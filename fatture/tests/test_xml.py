@@ -58,6 +58,25 @@ class GenerazioneXmlTest(TestCase):
         self.assertEqual(testo(xml, "IBAN"), [self.azienda.iban])
         self.assertEqual(etree.fromstring(xml).tag, f"{{{NS}}}FatturaElettronica")
 
+    def test_bollo_a_carico_del_cliente(self):
+        fattura = crea_fattura(self.cliente, righe=[(Decimal("1"), Decimal("100.00"))], bollo_a_carico_cliente=True)
+        for versione, riferimento in [("1.2.3", "art. 15 del D.P.R. 633/1972"), ("1.2.4", "art. 29 del D.Lgs. 10/2026")]:
+            xml = genera_xml(fattura, self.azienda, "00001", versione)
+            self.assertEqual(valida(xml, versione), [])
+            self.assertEqual(testo(xml, "Descrizione"), ["Consulenza 1", "Imposta di bollo"])
+            self.assertEqual(testo(xml, "Natura"), ["N2.2", "N1", "N2.2", "N1"])
+            self.assertEqual(testo(xml, "ImportoTotaleDocumento"), ["102.00"])
+            self.assertEqual(testo(xml, "ImportoPagamento"), ["102.00"])
+            self.assertEqual(testo(xml, "ImportoBollo"), ["2.00"])
+            self.assertIn(riferimento, testo(xml, "RiferimentoNormativo")[1])
+
+    def test_bollo_a_carico_cliente_ma_non_dovuto(self):
+        fattura = crea_fattura(self.cliente, righe=[(Decimal("1"), Decimal("50.00"))], bollo_a_carico_cliente=True)
+        xml = genera_xml(fattura, self.azienda, "00001")
+        self.assertValido(xml)
+        self.assertEqual(testo(xml, "ImportoTotaleDocumento"), ["50.00"])
+        self.assertEqual(testo(xml, "Natura"), ["N2.2", "N2.2"])
+
     def test_sotto_soglia_niente_bollo(self):
         fattura = crea_fattura(self.cliente, righe=[(Decimal("1"), Decimal("77.47"))])
         xml = genera_xml(fattura, self.azienda, "00001")

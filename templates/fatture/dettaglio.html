@@ -15,7 +15,7 @@
 <tr><td class="num">Imponibile</td><td class="num">{{ totali.imponibile }} €</td></tr>
 <tr><td class="num">IVA</td><td class="num">{{ totali.imposta }} €</td></tr>
 <tr><td class="num"><strong>Totale documento</strong></td><td class="num"><strong>{{ totali.totale_documento }} €</strong></td></tr>
-{% if totali.bollo_virtuale %}<tr><td class="num">Imposta di bollo virtuale (a tuo carico, non nel totale)</td><td class="num">{{ totali.bollo }} €</td></tr>{% endif %}
+{% if totali.bollo_virtuale %}<tr><td class="num">{% if totali.bollo_addebitato %}di cui imposta di bollo a carico del cliente{% else %}Imposta di bollo virtuale (a tuo carico, non nel totale){% endif %}</td><td class="num">{{ totali.bollo }} €</td></tr>{% endif %}
 </table></div>
 {% if rate %}
 <div class="carta scorri"><h2>Rate</h2>

@@ -4,12 +4,12 @@
 {% block contenuto %}
 <form method="post" id="modulo-fattura">{% csrf_token %}
 <div class="carta"><h1>{% if fattura %}Fattura {{ fattura.numero_documento }}{% else %}Nuova fattura{% endif %}</h1>
-{% include "campi.html" %}
+{% include "campi.html" with escludi="bollo_a_carico_cliente" %}
 <p class="aiuto" id="anteprima-scadenza" aria-live="polite"></p>
 <p class="aiuto">Il numero viene assegnato in automatico, progressivo per anno.</p></div>
 
 <div class="carta"><h2>Righe</h2>
-<p class="aiuto">Se scegli un articolo, descrizione, prezzo e unità di misura vuoti vengono presi dall'articolo.</p>
+<p class="aiuto">Scegliendo un articolo la riga si compila con i suoi dati, che puoi modificare.</p>
 {{ formset.management_form }}
 {% if formset.non_form_errors %}<ul class="errorlist">{% for e in formset.non_form_errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
 <div class="scorri"><table>
@@ -20,6 +20,14 @@
 </table></div>
 <template id="riga-vuota">{% with f=formset.empty_form %}{% include "fatture/riga.html" %}{% endwith %}</template>
 <button type="button" class="pulsante secondario" id="aggiungi-riga">+ Aggiungi riga</button>
+</div>
+
+<div class="carta" id="blocco-bollo">
+<h2>Bollo</h2>
+<p id="stato-bollo" aria-live="polite">Il bollo virtuale da 2,00 € si applica in automatico quando le righe senza IVA superano 77,47 €.</p>
+<label class="spunta"><input type="checkbox" name="{{ form.bollo_a_carico_cliente.html_name }}" id="{{ form.bollo_a_carico_cliente.id_for_label }}"{% if form.bollo_a_carico_cliente.value %} checked{% endif %}>
+Bollo a carico del cliente (i 2,00 € vengono aggiunti al totale da pagare)</label>
+{{ form.bollo_a_carico_cliente.errors }}
 </div>
 
 <div class="carta" id="blocco-rate">
@@ -36,6 +44,17 @@
 </table></div>
 <template id="rata-vuota">{% with f=rate_formset.empty_form %}{% include "fatture/rata.html" %}{% endwith %}</template>
 <button type="button" class="pulsante secondario" id="calcola-rate">Calcola scadenze</button>
+</div>
+
+<div class="carta" id="blocco-totale">
+<h2>Totale</h2>
+<table class="totali">
+<tr><td class="num">Imponibile</td><td class="num" id="tot-imponibile">0,00 €</td></tr>
+<tr><td class="num">IVA</td><td class="num" id="tot-iva">0,00 €</td></tr>
+<tr id="riga-tot-bollo" hidden><td class="num">Bollo a carico del cliente</td><td class="num" id="tot-bollo">0,00 €</td></tr>
+<tr><td class="num"><strong>Totale documento</strong></td><td class="num"><strong id="tot-documento">0,00 €</strong></td></tr>
+</table>
+<p class="aiuto">Calcolo indicativo durante la compilazione: i valori definitivi vengono ricalcolati al salvataggio.</p>
 </div>
 
 <div class="azioni"><button class="pulsante" type="submit">Salva bozza</button><a href="{% if fattura %}{% url 'fattura_dettaglio' fattura.pk %}{% else %}{% url 'fatture' %}{% endif %}">Annulla</a></div>

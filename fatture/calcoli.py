@@ -34,13 +34,22 @@ class Totali:
     imposta: Decimal
     totale_documento: Decimal
     bollo: Decimal
+    bollo_addebitato: bool = False
 
     @property
     def bollo_virtuale(self):
         return self.bollo > 0
 
 
-def calcola_totali(righe) -> Totali:
+NATURA_BOLLO_ADDEBITATO = "N1"
+
+
+def calcola_totali(righe, bollo_a_carico_cliente=False) -> Totali:
+    """Totali della fattura.
+
+    Se il bollo è dovuto e va a carico del cliente, viene aggiunto come importo escluso
+    da IVA (natura N1) e quindi entra nel totale del documento.
+    """
     gruppi = {}
     for riga in righe:
         chiave = (riga.aliquota_iva.quantize(CENTESIMO), riga.natura or "")
@@ -54,7 +63,11 @@ def calcola_totali(righe) -> Totali:
     imposta = sum((r.imposta for r in riepiloghi), Decimal("0.00"))
     esente = sum((r.imponibile for r in riepiloghi if r.natura in NATURE_SOGGETTE_A_BOLLO), Decimal("0"))
     bollo = IMPORTO_BOLLO if esente > SOGLIA_BOLLO else Decimal("0.00")
-    return Totali(riepiloghi, imponibile, imposta, imponibile + imposta, bollo)
+    addebitato = bool(bollo_a_carico_cliente and bollo)
+    if addebitato:
+        riepiloghi.append(Riepilogo(Decimal("0.00"), NATURA_BOLLO_ADDEBITATO, bollo, Decimal("0.00")))
+        imponibile += bollo
+    return Totali(riepiloghi, imponibile, imposta, imponibile + imposta, bollo, addebitato)
 
 
 # --- Scadenze --------------------------------------------------------------------

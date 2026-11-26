@@ -35,6 +35,49 @@
     riga.querySelector("[name$='-aliquota_iva']").value = dati.aliquota_iva;
   });
 
+  // --- Totali e bollo -------------------------------------------------------
+  // Stesse regole di fatture/calcoli.py (il server ricalcola comunque al salvataggio).
+  var SOGLIA_BOLLO = 77.47, IMPORTO_BOLLO = 2;
+  var NATURE_BOLLO = ["N2.1", "N2.2", "N4"];
+  var euro = new Intl.NumberFormat("it-IT", { style: "currency", currency: "EUR" });
+  function centesimi(x) { return Math.round((x + Number.EPSILON) * 100) / 100; }
+  function numero(campo) { var v = parseFloat(campo && campo.value); return isNaN(v) ? 0 : v; }
+
+  function aggiornaTotali() {
+    var gruppi = {};
+    document.querySelectorAll("#righe-corpo tr").forEach(function (tr) {
+      var canc = tr.querySelector("input[name$='-DELETE']");
+      if (canc && canc.checked) return;
+      var prezzo = tr.querySelector("[name$='-prezzo_unitario']");
+      if (!prezzo || prezzo.value === "") return;
+      var aliquota = numero(tr.querySelector("[name$='-aliquota_iva']"));
+      var natura = aliquota > 0 ? "" : tr.querySelector("[name$='-natura']").value;
+      var chiave = aliquota + "|" + natura;
+      var totaleRiga = centesimi(numero(tr.querySelector("[name$='-quantita']")) * numero(prezzo));
+      gruppi[chiave] = (gruppi[chiave] || 0) + totaleRiga;
+    });
+    var imponibile = 0, iva = 0, esente = 0;
+    Object.keys(gruppi).forEach(function (chiave) {
+      var parti = chiave.split("|"), base = centesimi(gruppi[chiave]);
+      imponibile += base;
+      iva += centesimi(base * parseFloat(parti[0]) / 100);
+      if (NATURE_BOLLO.indexOf(parti[1]) !== -1) esente += base;
+    });
+    var dovuto = esente > SOGLIA_BOLLO;
+    var aCarico = document.getElementById("id_bollo_a_carico_cliente").checked;
+    var bollo = dovuto && aCarico ? IMPORTO_BOLLO : 0;
+    document.getElementById("stato-bollo").textContent = dovuto
+      ? "Bollo virtuale dovuto: 2,00 € (le righe senza IVA superano 77,47 €)."
+      : "Bollo non dovuto: le righe senza IVA non superano 77,47 €.";
+    document.getElementById("riga-tot-bollo").hidden = !bollo;
+    document.getElementById("tot-imponibile").textContent = euro.format(centesimi(imponibile));
+    document.getElementById("tot-iva").textContent = euro.format(centesimi(iva));
+    document.getElementById("tot-bollo").textContent = euro.format(bollo);
+    document.getElementById("tot-documento").textContent = euro.format(centesimi(imponibile + iva + bollo));
+  }
+  document.getElementById("modulo-fattura").addEventListener("input", aggiornaTotali);
+  document.getElementById("modulo-fattura").addEventListener("change", aggiornaTotali);
+
   // --- Termini di pagamento -------------------------------------------------
   var condizioni = document.getElementById("id_condizioni_pagamento");
   var termini = document.getElementById("id_termini_pagamento");
@@ -122,4 +165,5 @@
   document.getElementById("rate-corpo").addEventListener("change", numeraRate);
   [condizioni, termini, dataFattura].forEach(function (el) { el.addEventListener("change", aggiorna); });
   aggiorna();
+  aggiornaTotali();
 })();

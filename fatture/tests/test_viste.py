@@ -86,6 +86,14 @@ class FlussoFatturaTest(TestCase):
         risposta = self.client.post(reverse("fattura_modifica", args=[fattura.pk]), self.dati_form())
         self.assertRedirects(risposta, reverse("fattura_dettaglio", args=[fattura.pk]))
 
+    def test_bollo_a_carico_cliente_dal_modulo(self):
+        self.client.post(reverse("fattura_nuova"), self.dati_form(bollo_a_carico_cliente="on"))
+        fattura = Fattura.objects.get()
+        self.assertTrue(fattura.bollo_a_carico_cliente)
+        risposta = self.client.get(reverse("fattura_dettaglio", args=[fattura.pk]))
+        self.assertContains(risposta, "502,00 €")
+        self.assertContains(risposta, "di cui imposta di bollo a carico del cliente")
+
     def test_scadenza_calcolata_dai_termini(self):
         self.client.post(reverse("fattura_nuova"), self.dati_form(termini_pagamento="30FM"))
         self.assertEqual(Fattura.objects.get().data_scadenza, date(2026, 12, 31))

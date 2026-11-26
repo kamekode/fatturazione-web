@@ -19,7 +19,7 @@ def emetti(fattura: Fattura) -> Fattura:
     versione = versione_schema()
     with transaction.atomic():
         progressivo = progressivo_da_numero(Contatore.prossimo("progressivo_invio"))
-        contenuto = genera_xml(fattura, azienda, progressivo)
+        contenuto = genera_xml(fattura, azienda, progressivo, versione)
         errori = valida(contenuto, versione)
         if errori:
             # L'eccezione annulla la transazione, compreso l'incremento del progressivo.

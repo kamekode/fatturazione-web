@@ -17,7 +17,7 @@ from .xml import ErroreFattura, anteprima_html, genera_xml, nome_file, versione_
 
 def elenco(request):
     fatture = Fattura.objects.select_related("cliente").prefetch_related("righe")
-    righe = [(f, calcola_totali(f.righe.all())) for f in fatture]
+    righe = [(f, calcola_totali(f.righe.all(), f.bollo_a_carico_cliente)) for f in fatture]
     return render(request, "fatture/elenco.html", {"righe": righe})
 
 
@@ -87,7 +87,7 @@ def _salva_rate(fattura, rate_formset, a_rate, rate_inserite):
 def dettaglio(request, pk):
     fattura = get_object_or_404(Fattura.objects.select_related("cliente"), pk=pk)
     righe = list(fattura.righe.all())
-    totali = calcola_totali(righe)
+    totali = calcola_totali(righe, fattura.bollo_a_carico_cliente)
     rate, errore_rate = list(fattura.rate.all()), None
     if rate:
         try:
@@ -131,7 +131,7 @@ def _contenuto_xml(fattura):
     """XML definitivo se la fattura è emessa, altrimenti una versione provvisoria."""
     if fattura.xml:
         return fattura.xml.encode("utf-8")
-    return genera_xml(fattura, Azienda.objects.first(), "00000")
+    return genera_xml(fattura, Azienda.objects.first(), "00000", versione_schema())
 
 
 def scarica_xml(request, pk):

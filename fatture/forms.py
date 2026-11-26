@@ -12,7 +12,7 @@ class FatturaForm(forms.ModelForm):
         model = Fattura
         fields = [
             "cliente", "tipo_documento", "data", "causale", "modalita_pagamento", "condizioni_pagamento",
-            "termini_pagamento", "data_scadenza", "numero_rate",
+            "termini_pagamento", "data_scadenza", "numero_rate", "bollo_a_carico_cliente",
         ]
         widgets = {
             "data": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),

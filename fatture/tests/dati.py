@@ -31,6 +31,7 @@ def crea_cliente(**campi):
 
 
 def crea_fattura(cliente, righe=((Decimal("1"), Decimal("100.00")),), **campi):
+    campi.setdefault("bollo_a_carico_cliente", False)
     fattura = Fattura.objects.create(cliente=cliente, data=campi.pop("data", date(2026, 11, 26)), **campi)
     for i, riga in enumerate(righe):
         quantita, prezzo, aliquota, natura = (tuple(riga) + (Decimal("0"), "N2.2")[len(riga) - 2 :])[:4]

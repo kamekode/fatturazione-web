@@ -30,6 +30,10 @@ class Fattura(models.Model):
         help_text="Calcolata in automatico dai termini, salvo con \"Data specifica\".",
     )
     numero_rate = models.PositiveSmallIntegerField(null=True, blank=True, help_text="Solo per il pagamento a rate.")
+    bollo_a_carico_cliente = models.BooleanField(
+        "bollo a carico del cliente", default=True,
+        help_text="Se il bollo è dovuto, i 2 € vengono aggiunti al totale da pagare.",
+    )
     stato = models.CharField(max_length=10, choices=Stato.choices, default=Stato.BOZZA, editable=False)
     progressivo_invio = models.CharField(max_length=5, blank=True, editable=False)
     xml = models.TextField(blank=True, editable=False)
