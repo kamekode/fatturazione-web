@@ -78,6 +78,20 @@
   document.getElementById("modulo-fattura").addEventListener("input", aggiornaTotali);
   document.getElementById("modulo-fattura").addEventListener("change", aggiornaTotali);
 
+  // --- Eliminazione righe e rate -------------------------------------------
+  // La riga sparisce subito; al salvataggio viene eliminata davvero.
+  document.getElementById("modulo-fattura").addEventListener("click", function (evento) {
+    var pulsante = evento.target.closest(".elimina-riga");
+    if (!pulsante) return;
+    var rata = pulsante.closest("tr.rata");
+    if (!window.confirm(rata ? "Eliminare questa rata?" : "Eliminare questa riga?")) return;
+    var tr = pulsante.closest("tr");
+    tr.querySelector("input[name$='-DELETE']").checked = true;
+    tr.hidden = true;
+    aggiornaTotali();
+    numeraRate();
+  });
+
   // --- Termini di pagamento -------------------------------------------------
   var condizioni = document.getElementById("id_condizioni_pagamento");
   var termini = document.getElementById("id_termini_pagamento");

@@ -18,4 +18,9 @@
       delete campo.dataset.valorePrecedente;
     }
   });
+  // Moduli con data-conferma: chiedono conferma prima dell'invio (es. eliminazione bozza).
+  document.addEventListener("submit", function (evento) {
+    var messaggio = evento.target.dataset && evento.target.dataset.conferma;
+    if (messaggio && !window.confirm(messaggio)) evento.preventDefault();
+  });
 })();

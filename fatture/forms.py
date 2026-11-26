@@ -1,4 +1,5 @@
 from django import forms
+from django.utils import timezone
 
 from anagrafiche.models import Azienda
 
@@ -8,22 +9,44 @@ from .models import Fattura, Rata, RigaFattura
 
 
 class FatturaForm(forms.ModelForm):
+    numero = forms.IntegerField(
+        label="Numero fattura", min_value=1,
+        help_text="Proposto in automatico (progressivo per anno). Puoi cambiarlo se serve.",
+    )
+    field_order = ["numero", "data"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance.pk:
+            self.initial["numero"] = self.instance.numero
+        else:
+            self.initial["numero"] = Fattura.prossimo_numero(timezone.localdate().year)
+
     class Meta:
         model = Fattura
         fields = [
-            "cliente", "tipo_documento", "data", "causale", "modalita_pagamento", "condizioni_pagamento",
+            "cliente", "tipo_documento", "data", "modalita_pagamento", "condizioni_pagamento",
             "termini_pagamento", "data_scadenza", "numero_rate", "bollo_a_carico_cliente",
         ]
         widgets = {
             "data": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
             "data_scadenza": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
-            "causale": forms.Textarea(attrs={"rows": 2}),
             "numero_rate": forms.NumberInput(attrs={"min": 2, "max": 36}),
         }
 
     def clean(self):
         dati = super().clean()
         data = dati.get("data")
+        numero = dati.get("numero")
+        if data and numero and not self.instance.pk and data.year != timezone.localdate().year:
+            # Il numero proposto vale per l'anno corrente: se la data è di un altro anno
+            # e il numero non è stato toccato, si usa il prossimo numero di quell'anno.
+            if numero == self.initial.get("numero"):
+                numero = dati["numero"] = Fattura.prossimo_numero(data.year)
+        if data and numero:
+            doppione = Fattura.objects.filter(anno=data.year, numero=numero).exclude(pk=self.instance.pk)
+            if doppione.exists():
+                self.add_error("numero", f"Esiste già la fattura {numero}/{data.year}.")
         termini = dati.get("termini_pagamento")
         a_rate = dati.get("condizioni_pagamento") == CondizioniPagamento.RATE
         if a_rate:
@@ -39,6 +62,10 @@ class FatturaForm(forms.ModelForm):
         elif dati.get("numero_rate") is not None and not 2 <= dati["numero_rate"] <= 36:
             self.add_error("numero_rate", "Da 2 a 36 rate.")
         return dati
+
+    def save(self, commit=True):
+        self.instance.numero = self.cleaned_data["numero"]
+        return super().save(commit)
 
 
 class RigaForm(forms.ModelForm):

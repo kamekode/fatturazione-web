@@ -62,14 +62,18 @@ class Fattura(models.Model):
         if self.data_scadenza and self.data and self.data_scadenza < self.data:
             raise ValidationError({"data_scadenza": "La scadenza non può precedere la data della fattura."})
 
+    @classmethod
+    def prossimo_numero(cls, anno):
+        return (cls.objects.filter(anno=anno).aggregate(m=Max("numero"))["m"] or 0) + 1
+
     def save(self, *args, **kwargs):
         if not self.pk:
             with transaction.atomic():
                 self.anno = self.data.year
-                ultimo = (
-                    Fattura.objects.select_for_update().filter(anno=self.anno).aggregate(m=Max("numero"))["m"] or 0
-                )
-                self.numero = ultimo + 1
+                if not self.numero:
+                    # Blocca le fatture dell'anno per assegnare il numero senza duplicati.
+                    list(Fattura.objects.select_for_update().filter(anno=self.anno).values_list("pk"))
+                    self.numero = Fattura.prossimo_numero(self.anno)
                 super().save(*args, **kwargs)
             return
         super().save(*args, **kwargs)

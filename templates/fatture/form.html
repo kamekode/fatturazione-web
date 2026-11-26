@@ -6,14 +6,14 @@
 <div class="carta"><h1>{% if fattura %}Fattura {{ fattura.numero_documento }}{% else %}Nuova fattura{% endif %}</h1>
 {% include "campi.html" with escludi="bollo_a_carico_cliente" %}
 <p class="aiuto" id="anteprima-scadenza" aria-live="polite"></p>
-<p class="aiuto">Il numero viene assegnato in automatico, progressivo per anno.</p></div>
+</div>
 
 <div class="carta"><h2>Righe</h2>
 <p class="aiuto">Scegliendo un articolo la riga si compila con i suoi dati, che puoi modificare.</p>
 {{ formset.management_form }}
 {% if formset.non_form_errors %}<ul class="errorlist">{% for e in formset.non_form_errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
 <div class="scorri"><table>
-<thead><tr><th>Articolo</th><th>Descrizione</th><th>Q.tà</th><th>U.m.</th><th>Prezzo</th><th>IVA %</th><th>Natura</th><th>Elimina</th></tr></thead>
+<thead><tr><th>Articolo</th><th>Descrizione</th><th>Q.tà</th><th>U.m.</th><th>Prezzo</th><th>IVA %</th><th>Natura</th><th></th></tr></thead>
 <tbody id="righe-corpo">
 {% for f in formset %}{% include "fatture/riga.html" %}{% endfor %}
 </tbody>
@@ -37,7 +37,7 @@ Bollo a carico del cliente (i 2,00 € vengono aggiunti al totale da pagare)</la
 {{ rate_formset.management_form }}
 {% if rate_formset.non_form_errors %}<ul class="errorlist">{% for e in rate_formset.non_form_errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
 <div class="scorri"><table>
-<thead><tr><th>Rata</th><th>Scadenza</th><th>Importo (€)</th><th>Elimina</th></tr></thead>
+<thead><tr><th>Rata</th><th>Scadenza</th><th>Importo (€)</th><th></th></tr></thead>
 <tbody id="rate-corpo">
 {% for f in rate_formset %}{% include "fatture/rata.html" %}{% endfor %}
 </tbody>

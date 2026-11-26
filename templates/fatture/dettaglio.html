@@ -31,7 +31,7 @@
   <a class="pulsante secondario" href="{% url 'fattura_modifica' fattura.pk %}">Modifica</a>
   <a class="pulsante secondario" href="{% url 'fattura_anteprima' fattura.pk %}" target="_blank" rel="noopener">Anteprima</a>
   <form class="in-linea" method="post" action="{% url 'fattura_emetti' fattura.pk %}">{% csrf_token %}<button class="pulsante" type="submit">Genera XML ed emetti</button></form>
-  <form class="in-linea" method="post" action="{% url 'fattura_elimina' fattura.pk %}">{% csrf_token %}<button class="pulsante pericolo" type="submit">Elimina bozza</button></form>
+  <form class="in-linea" method="post" action="{% url 'fattura_elimina' fattura.pk %}" data-conferma="Eliminare definitivamente questa bozza?">{% csrf_token %}<button class="pulsante pericolo" type="submit">Elimina bozza</button></form>
 {% else %}
   <a class="pulsante" href="{% url 'fattura_xml' fattura.pk %}">Scarica XML</a>
   <a class="pulsante secondario" href="{% url 'fattura_anteprima' fattura.pk %}" target="_blank" rel="noopener">Anteprima</a>

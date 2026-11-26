@@ -58,7 +58,7 @@ class FlussoFatturaTest(TestCase):
 
     def dati_form(self, **extra):
         dati = {
-            "cliente": self.cliente.pk, "tipo_documento": "TD01", "data": "2026-11-26", "causale": "",
+            "cliente": self.cliente.pk, "tipo_documento": "TD01", "data": "2026-11-26", "numero": "1",
             "condizioni_pagamento": "TP02", "modalita_pagamento": "MP05", "termini_pagamento": "30", "data_scadenza": "", "numero_rate": "",
             "rate-TOTAL_FORMS": "0", "rate-INITIAL_FORMS": "0", "rate-MIN_NUM_FORMS": "0", "rate-MAX_NUM_FORMS": "1000",
             "righe-TOTAL_FORMS": "2", "righe-INITIAL_FORMS": "0", "righe-MIN_NUM_FORMS": "1", "righe-MAX_NUM_FORMS": "1000",
@@ -93,6 +93,25 @@ class FlussoFatturaTest(TestCase):
         risposta = self.client.get(reverse("fattura_dettaglio", args=[fattura.pk]))
         self.assertContains(risposta, "502,00 €")
         self.assertContains(risposta, "di cui imposta di bollo a carico del cliente")
+
+    def test_numero_proposto_e_modificabile(self):
+        crea_fattura(self.cliente)
+        risposta = self.client.get(reverse("fattura_nuova"))
+        self.assertEqual(risposta.context["form"].initial["numero"], 2)
+        self.client.post(reverse("fattura_nuova"), self.dati_form(numero="10"))
+        self.assertEqual(Fattura.objects.get(numero=10).numero_documento, "10/2026")
+
+    def test_numero_duplicato_rifiutato(self):
+        crea_fattura(self.cliente)
+        risposta = self.client.post(reverse("fattura_nuova"), self.dati_form(numero="1"))
+        self.assertContains(risposta, "Esiste già la fattura 1/2026.")
+        self.assertEqual(Fattura.objects.count(), 1)
+
+    def test_numero_proposto_segue_l_anno_della_data(self):
+        crea_fattura(self.cliente, data=date(2025, 3, 1))
+        suggerito = self.client.get(reverse("fattura_nuova")).context["form"].initial["numero"]
+        self.client.post(reverse("fattura_nuova"), self.dati_form(data="2025-12-30", numero=str(suggerito)))
+        self.assertTrue(Fattura.objects.filter(anno=2025, numero=2).exists())
 
     def test_scadenza_calcolata_dai_termini(self):
         self.client.post(reverse("fattura_nuova"), self.dati_form(termini_pagamento="30FM"))
